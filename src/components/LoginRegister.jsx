@@ -17,16 +17,6 @@ const LoginRegister = ({ onLogin }) => {
     fetchCsrfToken().catch(console.error);
   }, []);
 
-  useEffect(() => {
-    // Ensure the image stays visible after initial load
-    if (imageLoaded) {
-      const img = document.querySelector('.cat-icon');
-      if (img) {
-        img.style.display = 'block';
-      }
-    }
-  }, [imageLoaded]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({ ...prevData, [name]: value }));
@@ -63,10 +53,17 @@ const LoginRegister = ({ onLogin }) => {
     <div className="container">
       <h1>Cat Chat</h1>
       <img 
-        src="/images/catchat.jpg" 
+        src="./images/catchat.jpg" 
         alt="Cat Chat Icon" 
         className="cat-icon" 
-        onLoad={() => setImageLoaded(true)}
+        onLoad={() => {
+          setImageLoaded(true);
+          console.log('Image loaded successfully');
+        }}
+        onError={(e) => {
+          console.error('Image failed to load', e);
+          e.target.style.display = 'none';
+        }}
         style={{ display: imageLoaded ? 'block' : 'none' }}
       />
       <div className="auth-form">
