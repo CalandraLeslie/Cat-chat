@@ -11,10 +11,21 @@ const LoginRegister = ({ onLogin }) => {
     avatar: ''
   });
   const [error, setError] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     fetchCsrfToken().catch(console.error);
   }, []);
+
+  useEffect(() => {
+    // Ensure the image stays visible after initial load
+    if (imageLoaded) {
+      const img = document.querySelector('.cat-icon');
+      if (img) {
+        img.style.display = 'block';
+      }
+    }
+  }, [imageLoaded]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +62,13 @@ const LoginRegister = ({ onLogin }) => {
   return (
     <div className="container">
       <h1>Cat Chat</h1>
-      <img src="/src/images/catchat.jpg" alt="Cat Chat Icon" className="cat-icon" />
+      <img 
+        src="/images/catchat.jpg" 
+        alt="Cat Chat Icon" 
+        className="cat-icon" 
+        onLoad={() => setImageLoaded(true)}
+        style={{ display: imageLoaded ? 'block' : 'none' }}
+      />
       <div className="auth-form">
         <h2>{isLoginForm ? 'Login' : 'Register'}</h2>
         {error && <p className="error-message">{error}</p>}
