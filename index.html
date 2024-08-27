@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Chat</title>
+    <link rel="stylesheet" href="/src/App.css">
+</head>
+<body>
+    <div id="root">
+        <!-- Your React app will be rendered here -->
+        <div class="container">
+            <h1>Cat Chat</h1>
+            <img src="/src/images/catchat.jpg" alt="Cat Chat Icon" class="cat-icon">
+            <div class="auth-form">
+                <h2>Login / Register</h2>
+                <div class="login-form">
+                    <!-- Login form will be replaced by your React component -->
+                    <input type="text" placeholder="Username" />
+                    <input type="password" placeholder="Password" />
+                    <button>Login</button>
+                </div>
+                <div class="register-form" style="display: none;">
+                    <!-- Registration form will be replaced by your React component -->
+                    <input type="text" placeholder="Username" />
+                    <input type="password" placeholder="Password" />
+                    <input type="email" placeholder="Email" />
+                    <input type="url" placeholder="Avatar URL" />
+                    <button>Register</button>
+                </div>
+                <p>Don't have an account? <span class="switch-form">Register</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load your React application -->
+    <script src="/src/main.jsx" type="module"></script>
+</body>
+</html>
