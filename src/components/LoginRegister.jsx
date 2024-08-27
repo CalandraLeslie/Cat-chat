@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { login, registerUser, fetchCsrfToken } from '../services/Api';
 import '../App.css';
+import catChatIcon from '../images/catchat.jpg';  // Import the new image
 
 const LoginRegister = ({ onLogin }) => {
   const [isLoginForm, setIsLoginForm] = useState(true);
@@ -11,7 +12,6 @@ const LoginRegister = ({ onLogin }) => {
     avatar: ''
   });
   const [error, setError] = useState('');
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     fetchCsrfToken().catch(console.error);
@@ -52,20 +52,7 @@ const LoginRegister = ({ onLogin }) => {
   return (
     <div className="container">
       <h1>Cat Chat</h1>
-      <img 
-        src="./images/catchat.jpg" 
-        alt="Cat Chat Icon" 
-        className="cat-icon" 
-        onLoad={() => {
-          setImageLoaded(true);
-          console.log('Image loaded successfully');
-        }}
-        onError={(e) => {
-          console.error('Image failed to load', e);
-          e.target.style.display = 'none';
-        }}
-        style={{ display: imageLoaded ? 'block' : 'none' }}
-      />
+      <img src={catChatIcon} alt="Cat Chat Icon" className="cat-icon" />
       <div className="auth-form">
         <h2>{isLoginForm ? 'Login' : 'Register'}</h2>
         {error && <p className="error-message">{error}</p>}
