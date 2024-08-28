@@ -35,7 +35,7 @@ const LoginRegister = ({ onLogin }) => {
         response = await registerUser(formData);
         console.log('Registration and login successful:', response);
       }
-      onLogin();
+      onLogin(response.user); // Pass the user data to the parent component
     } catch (error) {
       console.error('Authentication error:', error);
       if (error.message.includes('Invalid credentials')) {

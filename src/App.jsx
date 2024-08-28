@@ -1,21 +1,35 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister';
+import Profile from './components/Profile';
 import { logout } from './services/Api';
 
-const Home = () => <h2>Welcome to the Home Page</h2>;
-const Profile = () => <h2>User Profile Page</h2>;
+const Home = ({ user }) => (
+  <div>
+    <h2>Welcome to the Home Page</h2>
+    {user && user.avatar && (
+      <img 
+        src={user.avatar} 
+        alt="User Avatar" 
+        style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} 
+      />
+    )}
+  </div>
+);
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
 
-  const handleLogin = () => {
+  const handleLogin = (userData) => {
     setIsAuthenticated(true);
+    setUser(userData);
   };
 
   const handleLogout = () => {
     logout();
     setIsAuthenticated(false);
+    setUser(null);
   };
 
   return (
@@ -46,7 +60,7 @@ function App() {
             path="/home" 
             element={
               isAuthenticated ? 
-                <Home /> : 
+                <Home user={user} /> : 
                 <Navigate to="/" />
             } 
           />
@@ -54,7 +68,7 @@ function App() {
             path="/profile" 
             element={
               isAuthenticated ? 
-                <Profile /> : 
+                <Profile user={user} /> : 
                 <Navigate to="/" />
             } 
           />

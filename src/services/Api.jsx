@@ -34,7 +34,6 @@ async function fetchCsrfToken() {
     csrfToken = data.csrf_token;
     return csrfToken;
   } catch (error) {
-    console.error('Error fetching CSRF token:', error);
     throw error;
   }
 }
@@ -58,15 +57,13 @@ async function apiRequest(url, options = {}) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    console.log('API Request:', { url: fullUrl, method: options.method, headers, body: options.body });
-
+    // Use the fetch API without any logging
     const response = await fetch(fullUrl, {
       ...options,
       headers,
     });
 
     const data = await response.json();
-    console.log('API Response:', data);
 
     if (!response.ok) {
       throw new Error(data.error || `Request failed: ${response.status} ${response.statusText}`);
@@ -74,7 +71,7 @@ async function apiRequest(url, options = {}) {
 
     return data;
   } catch (error) {
-    console.error(`Error in API request to ${url}:`, error);
+    // Rethrow the error without logging
     throw error;
   }
 }
@@ -89,12 +86,11 @@ export async function login(credentials) {
 
     if (response.token) {
       setToken(response.token);
-      return { token: response.token };
+      return { token: response.token, user: response.user };
     } else {
       throw new Error('Login failed: No token received');
     }
   } catch (error) {
-    console.error('Login error:', error);
     throw error;
   }
 }
@@ -106,17 +102,13 @@ export async function registerUser(userData) {
       body: JSON.stringify(userData),
     });
 
-    console.log('Registration response:', response);
-
     if (response.message === 'User registered successfully') {
-      // If registration is successful, attempt to log in
-      console.log('Registration successful, attempting to log in...');
-      return await login({ username: userData.username, password: userData.password });
+      const loginResponse = await login({ username: userData.username, password: userData.password });
+      return { ...loginResponse, user: { ...loginResponse.user, avatar: userData.avatar } };
     } else {
       throw new Error('Registration failed: Unexpected response');
     }
   } catch (error) {
-    console.error('Registration error:', error);
     throw error;
   }
 }
@@ -128,6 +120,27 @@ export function logout() {
 
 export function isAuthenticated() {
   return !!getToken();
+}
+
+// User profile function
+export async function getUserProfile() {
+  try {
+    return await apiRequest('/user/profile', { method: 'GET' });
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Function to update user profile (including avatar)
+export async function updateUserProfile(userData) {
+  try {
+    return await apiRequest('/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  } catch (error) {
+    throw error;
+  }
 }
 
 export { fetchCsrfToken };
