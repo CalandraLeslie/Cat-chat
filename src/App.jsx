@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister';
+import { logout } from './services/Api';
 
 const Home = () => <h2>Welcome to the Home Page</h2>;
 const Profile = () => <h2>User Profile Page</h2>;
@@ -13,6 +14,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    logout();
     setIsAuthenticated(false);
   };
 

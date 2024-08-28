@@ -58,17 +58,21 @@ async function apiRequest(url, options = {}) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    console.log('API Request:', { url: fullUrl, method: options.method, headers, body: options.body });
+
     const response = await fetch(fullUrl, {
       ...options,
       headers,
     });
 
+    const data = await response.json();
+    console.log('API Response:', data);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Request failed: ${response.status} ${response.statusText}\nResponse: ${errorText}`);
+      throw new Error(data.error || `Request failed: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    return data;
   } catch (error) {
     console.error(`Error in API request to ${url}:`, error);
     throw error;
@@ -85,7 +89,7 @@ export async function login(credentials) {
 
     if (response.token) {
       setToken(response.token);
-      return response;
+      return { token: response.token };
     } else {
       throw new Error('Login failed: No token received');
     }
@@ -96,10 +100,25 @@ export async function login(credentials) {
 }
 
 export async function registerUser(userData) {
-  return apiRequest('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
+  try {
+    const response = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+
+    console.log('Registration response:', response);
+
+    if (response.message === 'User registered successfully') {
+      // If registration is successful, attempt to log in
+      console.log('Registration successful, attempting to log in...');
+      return await login({ username: userData.username, password: userData.password });
+    } else {
+      throw new Error('Registration failed: Unexpected response');
+    }
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
 }
 
 export function logout() {

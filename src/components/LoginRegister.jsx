@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { login, registerUser, fetchCsrfToken } from '../services/Api';
 import '../App.css';
-import catChatIcon from '../images/catchat.jpg';  // Import the new image
+import catChatIcon from '../images/catchat.jpg';
 
 const LoginRegister = ({ onLogin }) => {
   const [isLoginForm, setIsLoginForm] = useState(true);
@@ -27,19 +27,24 @@ const LoginRegister = ({ onLogin }) => {
     setError('');
 
     try {
+      let response;
       if (isLoginForm) {
-        const response = await login({ username: formData.username, password: formData.password });
+        response = await login({ username: formData.username, password: formData.password });
         console.log('Login successful:', response);
-        onLogin();
       } else {
-        const response = await registerUser(formData);
-        console.log('Registration successful:', response);
-        setIsLoginForm(true);
-        setFormData({ username: '', password: '', email: '', avatar: '' });
+        response = await registerUser(formData);
+        console.log('Registration and login successful:', response);
       }
+      onLogin();
     } catch (error) {
       console.error('Authentication error:', error);
-      setError(error.message || 'An error occurred. Please try again.');
+      if (error.message.includes('Invalid credentials')) {
+        setError('Invalid username or password. Please try again.');
+      } else if (error.message.includes('Username or email already exists')) {
+        setError('Username or email already exists. Please choose a different one.');
+      } else {
+        setError(`An error occurred: ${error.message}`);
+      }
     }
   };
 
