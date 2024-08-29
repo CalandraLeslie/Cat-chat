@@ -2,20 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister';
 import Profile from './components/Profile';
+import Chat from './components/Chat';
+import Home from './components/Home';
 import { logout } from './services/Api';
-
-const Home = ({ user }) => (
-  <div>
-    <h2>Welcome to the Home Page</h2>
-    {user && user.avatar && (
-      <img 
-        src={user.avatar} 
-        alt="User Avatar" 
-        style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} 
-      />
-    )}
-  </div>
-);
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -41,6 +30,7 @@ function App() {
               <>
                 <li><Link to="/home">Home</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
+                <li><Link to="/chat">Chat</Link></li>
                 <li><button onClick={handleLogout}>Logout</button></li>
               </>
             ) : null}
@@ -69,6 +59,14 @@ function App() {
             element={
               isAuthenticated ? 
                 <Profile user={user} /> : 
+                <Navigate to="/" />
+            } 
+          />
+          <Route 
+            path="/chat" 
+            element={
+              isAuthenticated ? 
+                <Chat /> : 
                 <Navigate to="/" />
             } 
           />

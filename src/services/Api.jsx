@@ -57,7 +57,6 @@ async function apiRequest(url, options = {}) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Use the fetch API without any logging
     const response = await fetch(fullUrl, {
       ...options,
       headers,
@@ -71,7 +70,6 @@ async function apiRequest(url, options = {}) {
 
     return data;
   } catch (error) {
-    // Rethrow the error without logging
     throw error;
   }
 }
@@ -138,6 +136,34 @@ export async function updateUserProfile(userData) {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Chat functions
+export async function getAllMessages() {
+  try {
+    return await apiRequest('/messages', { method: 'GET' });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function createMessage(messageData) {
+  try {
+    return await apiRequest('/messages', {
+      method: 'POST',
+      body: JSON.stringify(messageData),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deleteMessage(messageId) {
+  try {
+    return await apiRequest(`/messages/${messageId}`, { method: 'DELETE' });
   } catch (error) {
     throw error;
   }
