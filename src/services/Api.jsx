@@ -34,6 +34,7 @@ async function fetchCsrfToken() {
     csrfToken = data.csrf_token;
     return csrfToken;
   } catch (error) {
+    console.error('Error fetching CSRF token:', error);
     throw error;
   }
 }
@@ -62,14 +63,14 @@ async function apiRequest(url, options = {}) {
       headers,
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.error || `Request failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Request failed: ${response.status} ${response.statusText}`);
     }
 
-    return data;
+    return await response.json();
   } catch (error) {
+    console.error('API request error:', error);
     throw error;
   }
 }
@@ -89,6 +90,7 @@ export async function login(credentials) {
       throw new Error('Login failed: No token received');
     }
   } catch (error) {
+    console.error('Login error:', error);
     throw error;
   }
 }
@@ -107,6 +109,7 @@ export async function registerUser(userData) {
       throw new Error('Registration failed: Unexpected response');
     }
   } catch (error) {
+    console.error('Registration error:', error);
     throw error;
   }
 }
@@ -120,23 +123,24 @@ export function isAuthenticated() {
   return !!getToken();
 }
 
-// User profile function
+// User profile functions
 export async function getUserProfile() {
   try {
-    return await apiRequest('/user/profile', { method: 'GET' });
+    return await apiRequest('/users/me', { method: 'GET' });
   } catch (error) {
+    console.error('Error fetching user profile:', error);
     throw error;
   }
 }
 
-// Function to update user profile (including avatar)
 export async function updateUserProfile(userData) {
   try {
-    return await apiRequest('/user/profile', {
+    return await apiRequest('/users/me', {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
   } catch (error) {
+    console.error('Error updating user profile:', error);
     throw error;
   }
 }
@@ -146,6 +150,7 @@ export async function getAllMessages() {
   try {
     return await apiRequest('/messages', { method: 'GET' });
   } catch (error) {
+    console.error('Error fetching messages:', error);
     throw error;
   }
 }
@@ -157,6 +162,7 @@ export async function createMessage(messageData) {
       body: JSON.stringify(messageData),
     });
   } catch (error) {
+    console.error('Error creating message:', error);
     throw error;
   }
 }
@@ -165,6 +171,7 @@ export async function deleteMessage(messageId) {
   try {
     return await apiRequest(`/messages/${messageId}`, { method: 'DELETE' });
   } catch (error) {
+    console.error('Error deleting message:', error);
     throw error;
   }
 }

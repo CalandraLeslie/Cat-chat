@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister';
 import Profile from './components/Profile';
 import Chat from './components/Chat';
 import Home from './components/Home';
-import { logout } from './services/Api';
+import { logout, isAuthenticated, getUserProfile } from './services/Api';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuth, setIsAuth] = useState(isAuthenticated());
   const [user, setUser] = useState(null);
 
-  const handleLogin = (userData) => {
-    setIsAuthenticated(true);
+  useEffect(() => {
+    if (isAuth) {
+      fetchUserProfile();
+    }
+  }, [isAuth]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const userData = await getUserProfile();
+      setUser(userData);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      handleLogout();
+    }
+  };
+
+  const handleLogin = async (userData) => {
+    setIsAuth(true);
     setUser(userData);
   };
 
   const handleLogout = () => {
     logout();
-    setIsAuthenticated(false);
+    setIsAuth(false);
     setUser(null);
   };
 
@@ -26,7 +42,7 @@ function App() {
       <div className="App">
         <nav>
           <ul>
-            {isAuthenticated ? (
+            {isAuth ? (
               <>
                 <li><Link to="/home">Home</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
@@ -41,7 +57,7 @@ function App() {
           <Route 
             path="/" 
             element={
-              isAuthenticated ? 
+              isAuth ? 
                 <Navigate to="/home" /> : 
                 <LoginRegister onLogin={handleLogin} />
             } 
@@ -49,7 +65,7 @@ function App() {
           <Route 
             path="/home" 
             element={
-              isAuthenticated ? 
+              isAuth ? 
                 <Home user={user} /> : 
                 <Navigate to="/" />
             } 
@@ -57,16 +73,16 @@ function App() {
           <Route 
             path="/profile" 
             element={
-              isAuthenticated ? 
-                <Profile user={user} /> : 
+              isAuth ? 
+                <Profile user={user} updateUser={setUser} /> : 
                 <Navigate to="/" />
             } 
           />
           <Route 
             path="/chat" 
             element={
-              isAuthenticated ? 
-                <Chat /> : 
+              isAuth ? 
+                <Chat user={user} /> : 
                 <Navigate to="/" />
             } 
           />
