@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAllMessages, createMessage, deleteMessage, isAuthenticated } from '../services/Api';
+import { getAllMessages, createMessage, deleteMessage } from '../services/Api';
 
-export default function Chat() {
+const Chat = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate('/login');
-    } else {
-      fetchMessages();
-    }
-  }, [navigate]);
+    fetchMessages();
+  }, []);
 
   const fetchMessages = async () => {
     try {
@@ -30,7 +24,7 @@ export default function Chat() {
     e.preventDefault();
     if (!newMessage.trim()) return;
     try {
-      await createMessage({ content: newMessage });
+      await createMessage({ content: newMessage, userId: user.id });
       setNewMessage('');
       fetchMessages();
     } catch (err) {
@@ -50,18 +44,21 @@ export default function Chat() {
   };
 
   return (
-    <div className="chat-container">
+    <div className="container">
+      <h1>Chat</h1>
       <div className="chat-messages">
         {messages.map((msg) => (
           <div key={msg.id} className="message">
             <strong>{msg.user.username}: </strong>
             <span>{msg.content}</span>
-            <button onClick={() => handleDelete(msg.id)}>Delete</button>
+            {msg.user.id === user.id && (
+              <button onClick={() => handleDelete(msg.id)} className="submit-button">Delete</button>
+            )}
           </div>
         ))}
       </div>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleSubmit} className="message-form">
+      {error && <p className="error-message">{error}</p>}
+      <form onSubmit={handleSubmit} className="auth-form">
         <input
           type="text"
           value={newMessage}
@@ -69,8 +66,10 @@ export default function Chat() {
           placeholder="Type a message..."
           required
         />
-        <button type="submit">Send</button>
+        <button type="submit" className="submit-button">Send</button>
       </form>
     </div>
   );
-}
+};
+
+export default Chat;

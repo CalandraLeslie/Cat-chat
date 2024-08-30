@@ -1,8 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getUserProfile } from '../services/Api';
 import catChatIcon from '../images/catchat.jpg';
 
-const Home = ({ user }) => {
+const Home = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const userData = await getUserProfile();
+      setUser(userData);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   return (
     <div className="container">
       <h1>Cat Chat</h1>
