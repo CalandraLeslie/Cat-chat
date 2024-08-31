@@ -76,7 +76,7 @@ async function apiRequest(url, options = {}) {
 }
 
 // Authentication functions
-export async function login(credentials) {
+async function login(credentials) {
   try {
     const response = await apiRequest('/auth/token', {
       method: 'POST',
@@ -85,7 +85,8 @@ export async function login(credentials) {
 
     if (response.token) {
       setToken(response.token);
-      return { token: response.token, userId: response.userId };
+      const userInfo = await getUserInfo(response.userId);
+      return { token: response.token, user: userInfo };
     } else {
       throw new Error('Login failed: No token received');
     }
@@ -95,7 +96,7 @@ export async function login(credentials) {
   }
 }
 
-export async function registerUser(userData) {
+async function registerUser(userData) {
   try {
     const response = await apiRequest('/auth/register', {
       method: 'POST',
@@ -103,8 +104,7 @@ export async function registerUser(userData) {
     });
 
     if (response.message === 'User registered successfully') {
-      const loginResponse = await login({ username: userData.username, password: userData.password });
-      return { ...loginResponse, user: { ...loginResponse.user, avatar: userData.avatar } };
+      return await login({ username: userData.username, password: userData.password });
     } else {
       throw new Error('Registration failed: Unexpected response');
     }
@@ -114,17 +114,17 @@ export async function registerUser(userData) {
   }
 }
 
-export function logout() {
+function logout() {
   removeToken();
   csrfToken = null;
 }
 
-export function isAuthenticated() {
+function isAuthenticated() {
   return !!getToken();
 }
 
 // User profile functions
-export async function getUserInfo(userId) {
+async function getUserInfo(userId) {
   try {
     return await apiRequest(`/users/${userId}`, { method: 'GET' });
   } catch (error) {
@@ -133,7 +133,7 @@ export async function getUserInfo(userId) {
   }
 }
 
-export async function updateUserProfile(userData) {
+async function updateUserProfile(userData) {
   try {
     return await apiRequest('/users/me', {
       method: 'PUT',
@@ -145,17 +145,29 @@ export async function updateUserProfile(userData) {
   }
 }
 
-// Chat functions
-export async function getAllMessages() {
+async function deleteUser(userId) {
   try {
-    return await apiRequest('/messages', { method: 'GET' });
+    return await apiRequest(`/users/${userId}`, { method: 'DELETE' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+}
+
+// Chat functions
+async function getAllMessages(conversationId = null) {
+  try {
+    const url = conversationId 
+      ? `/messages?conversationId=${conversationId}`
+      : '/messages';
+    return await apiRequest(url, { method: 'GET' });
   } catch (error) {
     console.error('Error fetching messages:', error);
     throw error;
   }
 }
 
-export async function createMessage(messageData) {
+async function createMessage(messageData) {
   try {
     return await apiRequest('/messages', {
       method: 'POST',
@@ -167,7 +179,7 @@ export async function createMessage(messageData) {
   }
 }
 
-export async function deleteMessage(messageId) {
+async function deleteMessage(messageId) {
   try {
     return await apiRequest(`/messages/${messageId}`, { method: 'DELETE' });
   } catch (error) {
@@ -176,4 +188,26 @@ export async function deleteMessage(messageId) {
   }
 }
 
-export { fetchCsrfToken };
+// Utility function to generate a GUID for conversation IDs
+function generateConversationId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// Export all functions at once
+export {
+  fetchCsrfToken,
+  login,
+  registerUser,
+  logout,
+  isAuthenticated,
+  getUserInfo,
+  updateUserProfile,
+  deleteUser,
+  getAllMessages,
+  createMessage,
+  deleteMessage,
+  generateConversationId
+};

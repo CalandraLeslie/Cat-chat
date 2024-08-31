@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { updateUserProfile } from '../services/Api';
-import { toast } from 'react-toastify';
 
 const Profile = ({ user, updateUser }) => {
   const [bio, setBio] = useState(user?.bio || '');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    setBio(user?.bio || '');
-  }, [user]);
 
   const handleBioChange = (event) => {
     setBio(event.target.value);
@@ -23,10 +18,8 @@ const Profile = ({ user, updateUser }) => {
       const updatedUser = await updateUserProfile({ bio });
       updateUser({ ...user, bio });
       setIsEditing(false);
-      toast.success('Bio updated successfully!');
     } catch (error) {
       console.error('Failed to update bio:', error);
-      toast.error('Failed to update bio: ' + error.toString());
     } finally {
       setIsLoading(false);
     }
@@ -41,14 +34,14 @@ const Profile = ({ user, updateUser }) => {
       <h2>User Profile</h2>
       <div className="avatar-container">
         <img 
-          src={user.avatar || 'https://i.ibb.co/Dg5PvLx/rsz-icons8-cat-100.png'} 
+          src={user.avatar || 'https://i.pravatar.cc/200'} 
           alt="User Avatar" 
           className="avatar"
-          style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%' }}
         />
       </div>
       <p>Username: {user.username}</p>
       <p>Email: {user.email}</p>
+      <p>User ID: {user.id}</p>
       
       <div className="bio-section">
         <h3>Bio</h3>
