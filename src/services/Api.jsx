@@ -134,4 +134,26 @@ export async function deleteUser() {
   });
 }
 
-export { fetchCsrfToken };
+// Utility function to generate a GUID for conversation IDs
+function generateConversationId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// Export all functions at once
+export {
+  fetchCsrfToken,
+  login,
+  registerUser,
+  logout,
+  isAuthenticated,
+  getUserInfo,
+  updateUserProfile,
+  deleteUser,
+  getAllMessages,
+  createMessage,
+  deleteMessage,
+  generateConversationId
+};
