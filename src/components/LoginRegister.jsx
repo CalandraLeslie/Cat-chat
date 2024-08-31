@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { login, registerUser, fetchCsrfToken } from '../services/Api';
-import '../App.css';
+import { toast } from 'react-toastify';
 import catChatIcon from '../images/catchat.jpg';
 
 const LoginRegister = ({ onLogin }) => {
@@ -11,7 +11,6 @@ const LoginRegister = ({ onLogin }) => {
     email: '',
     avatar: ''
   });
-  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchCsrfToken().catch(console.error);
@@ -24,34 +23,28 @@ const LoginRegister = ({ onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     try {
       let response;
       if (isLoginForm) {
         response = await login({ username: formData.username, password: formData.password });
-        console.log('Login successful:', response);
+        console.log('Login response:', response);
+        toast.success('Login successful!');
       } else {
         response = await registerUser(formData);
-        console.log('Registration and login successful:', response);
+        console.log('Registration response:', response);
+        toast.success('Registration successful! You are now logged in.');
       }
-      onLogin(response); // Pass the entire response to the parent component
+      onLogin(response);
     } catch (error) {
       console.error('Authentication error:', error);
-      if (error.message.includes('Invalid credentials')) {
-        setError('Invalid username or password. Please try again.');
-      } else if (error.message.includes('Username or email already exists')) {
-        setError('Username or email already exists. Please choose a different one.');
-      } else {
-        setError(`An error occurred: ${error.message}`);
-      }
+      toast.error(error.message);
     }
   };
 
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
     setFormData({ username: '', password: '', email: '', avatar: '' });
-    setError('');
   };
 
   return (
@@ -60,7 +53,6 @@ const LoginRegister = ({ onLogin }) => {
       <img src={catChatIcon} alt="Cat Chat Icon" className="cat-icon" />
       <div className="auth-form">
         <h2>{isLoginForm ? 'Login' : 'Register'}</h2>
-        {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
           <input
             type="text"

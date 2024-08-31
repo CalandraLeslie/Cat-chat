@@ -1,34 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { updateUserProfile } from '../services/Api';
+import { getUserInfo, updateUserProfile, deleteUser, getCurrentUser } from '../services/Api';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
-const Profile = ({ user, updateUser }) => {
-  const [bio, setBio] = useState(user?.bio || '');
+const Profile = () => {
+  const [user, setUser] = useState(getCurrentUser());
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    avatar: '',
+    bio: '',
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setBio(user?.bio || '');
-  }, [user]);
+    fetchUserInfo();
+  }, []);
 
-  const handleBioChange = (event) => {
-    setBio(event.target.value);
+  const fetchUserInfo = async () => {
+    try {
+      const userData = await getUserInfo();
+      setUser(userData);
+      setFormData({
+        username: userData.username,
+        email: userData.email,
+        avatar: userData.avatar,
+        bio: userData.bio || '',
+      });
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+      toast.error('Failed to load user information');
+    }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsLoading(true);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const updatedUser = await updateUserProfile({ bio });
-      updateUser({ ...user, bio });
+      await updateUserProfile(formData);
+      setUser(prevUser => ({ ...prevUser, ...formData }));
       setIsEditing(false);
-      toast.success('Bio updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
-      console.error('Failed to update bio:', error);
-      toast.error('Failed to update bio: ' + error.toString());
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to update profile:', error);
+      toast.error('Failed to update profile: ' + error.toString());
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        await deleteUser();
+        toast.success('Account deleted successfully.');
+        navigate('/');
+      } catch (error) {
+        console.error('Failed to delete account:', error);
+        toast.error('Failed to delete account: ' + error.toString());
+      }
     }
   };
 
@@ -37,44 +70,54 @@ const Profile = ({ user, updateUser }) => {
   }
 
   return (
-    <div className="container profile">
-      <h2>User Profile</h2>
-      <div className="avatar-container">
-        <img 
-          src={user.avatar || 'https://i.ibb.co/Dg5PvLx/rsz-icons8-cat-100.png'} 
-          alt="User Avatar" 
-          className="avatar"
-          style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%' }}
-        />
-      </div>
-      <p>Username: {user.username}</p>
-      <p>Email: {user.email}</p>
-      
-      <div className="bio-section">
-        <h3>Bio</h3>
+    <div className="container">
+      <h1>User Profile</h1>
+      <img src={user.avatar} alt="User Avatar" className="cat-icon" />
+      <div className="auth-form">
         {isEditing ? (
-          <form onSubmit={handleSubmit} className="auth-form">
-            <textarea 
-              value={bio} 
-              onChange={handleBioChange} 
-              className="bio-input"
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Username"
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+            />
+            <input
+              type="url"
+              name="avatar"
+              value={formData.avatar}
+              onChange={handleChange}
+              placeholder="Avatar URL"
+            />
+            <textarea
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              placeholder="Your bio"
               rows="4"
             />
-            <button type="submit" className="submit-button" disabled={isLoading}>
-              {isLoading ? 'Updating...' : 'Save Bio'}
-            </button>
-            <button type="button" className="submit-button" onClick={() => setIsEditing(false)}>
-              Cancel
-            </button>
+            <button type="submit" className="submit-button">Save Changes</button>
+            <button type="button" onClick={() => setIsEditing(false)} className="submit-button">Cancel</button>
           </form>
         ) : (
-          <>
-            <p>{bio || 'No bio added yet.'}</p>
-            <button onClick={() => setIsEditing(true)} className="submit-button">
-              Edit Bio
-            </button>
-          </>
+          <div>
+            <p><strong>Username:</strong> {user.username}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Bio:</strong> {user.bio || 'No bio added yet.'}</p>
+            <button onClick={() => setIsEditing(true)} className="submit-button">Edit Profile</button>
+          </div>
         )}
+        <button onClick={handleDeleteAccount} className="submit-button delete-account-btn">Delete Account</button>
       </div>
     </div>
   );

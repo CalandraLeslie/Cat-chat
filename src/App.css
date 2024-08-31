@@ -125,7 +125,6 @@ h1 {
     font-size: 14px;
   }
 }
-/* Existing styles... */
 
 /* Home page styles */
 .home-container {
@@ -165,4 +164,126 @@ h1 {
   background-color: #C19A6B;
 }
 
-/* Existing styles... */
+/* Chat styles */
+.chat-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.messages {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.own-message {
+  background-color: #e6f3ff;
+  text-align: right;
+}
+
+.message-form {
+  display: flex;
+}
+
+.message-form input {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+/* Profile styles */
+.profile-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+/* SideNav styles */
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.side-nav li {
+  margin-bottom: 10px;
+}
+
+.side-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.side-nav button {
+  width: 100%;
+  padding: 10px;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Content area adjustment for SideNav */
+.content {
+  margin-left: 220px; /* Width of SideNav + some extra space */
+  padding: 20px;
+}
+
+/* Delete account button styles */
+.delete-account-btn {
+  background-color: #dc3545;
+  color: white;
+  margin-top: 20px;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+
+/* Hover styles for side nav */
+.side-nav a:hover {
+  color: #D2B48C; /* Light brown color to match the submit button */
+}
+
+.side-nav button:hover {
+  background-color: #C19A6B; /* Darker shade of brown for hover effect */
+}
