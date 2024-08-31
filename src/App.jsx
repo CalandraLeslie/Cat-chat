@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import LoginRegister from './components/LoginRegister';
 import Profile from './components/Profile';
 import Chat from './components/Chat';
 import Home from './components/Home';
-import { logout, isAuthenticated, getUserProfile } from './services/Api';
+import { logout, isAuthenticated, getUserInfo } from './services/Api';
 
 function App() {
   const [isAuth, setIsAuth] = useState(isAuthenticated());
@@ -12,29 +14,34 @@ function App() {
 
   useEffect(() => {
     if (isAuth) {
-      fetchUserProfile();
+      fetchUserInfo();
     }
   }, [isAuth]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserInfo = async () => {
     try {
-      const userData = await getUserProfile();
-      setUser(userData);
+      const userId = localStorage.getItem('userId'); // We'll store userId in localStorage after login
+      if (userId) {
+        const userData = await getUserInfo(userId);
+        setUser(userData);
+      }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching user info:', error);
       handleLogout();
     }
   };
 
-  const handleLogin = async (userData) => {
+  const handleLogin = async (loginData) => {
     setIsAuth(true);
-    setUser(userData);
+    localStorage.setItem('userId', loginData.userId);
+    await fetchUserInfo(); // Fetch user info immediately after login
   };
 
   const handleLogout = () => {
     logout();
     setIsAuth(false);
     setUser(null);
+    localStorage.removeItem('userId');
   };
 
   return (
@@ -87,6 +94,8 @@ function App() {
             } 
           />
         </Routes>
+
+        <ToastContainer position="bottom-right" />
       </div>
     </Router>
   );

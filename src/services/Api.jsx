@@ -85,7 +85,7 @@ export async function login(credentials) {
 
     if (response.token) {
       setToken(response.token);
-      return { token: response.token, user: response.user };
+      return { token: response.token, userId: response.userId };
     } else {
       throw new Error('Login failed: No token received');
     }
@@ -124,11 +124,11 @@ export function isAuthenticated() {
 }
 
 // User profile functions
-export async function getUserProfile() {
+export async function getUserInfo(userId) {
   try {
-    return await apiRequest('/users/me', { method: 'GET' });
+    return await apiRequest(`/users/${userId}`, { method: 'GET' });
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error('Error fetching user info:', error);
     throw error;
   }
 }
