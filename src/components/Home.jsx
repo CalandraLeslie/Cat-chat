@@ -7,11 +7,11 @@ const Home = () => {
 
   return (
     <div className="container">
-      <h1>Welcome to Cat Chat</h1>
+      <h1>Cat Chat</h1>
       {user && (
         <>
           <img src={user.avatar} alt="User Avatar" className="cat-icon" />
-          <h2>Hello, {user.username}!</h2>
+          <h2>{user.username}</h2>
         </>
       )}
       <div className="auth-form">

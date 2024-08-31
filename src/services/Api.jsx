@@ -5,6 +5,8 @@ const API_URL = 'https://chatify-api.up.railway.app';
 let csrfToken = null;
 
 async function fetchCsrfToken() {
+  if (csrfToken) return csrfToken;
+
   try {
     const response = await fetch(`${API_URL}/csrf`, {
       method: 'PATCH',
@@ -20,48 +22,45 @@ async function fetchCsrfToken() {
 
     const data = await response.json();
     csrfToken = data.csrf_token;
-    console.log('CSRF Token:', csrfToken);
     return csrfToken;
   } catch (error) {
-    console.error('Error fetching CSRF token:', error);
+    console.error('Error fetching CSRF token');
     throw error;
   }
 }
 
 async function apiRequest(url, options = {}) {
-  if (!csrfToken) {
-    await fetchCsrfToken();
+  try {
+    if (!csrfToken) {
+      await fetchCsrfToken();
+    }
+
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      ...options.headers,
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken,
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}${url}`, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'An error occurred');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('API request error');
+    throw error;
   }
-
-  const token = localStorage.getItem('authToken');
-  const headers = {
-    ...options.headers,
-    'Content-Type': 'application/json',
-    'X-CSRF-Token': csrfToken,
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_URL}${url}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'An error occurred');
-  }
-
-  return response.json();
-}
-
-export async function registerUser(userData) {
-  return apiRequest('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
 }
 
 export async function login(credentials) {
@@ -70,8 +69,14 @@ export async function login(credentials) {
     body: JSON.stringify(credentials),
   });
   localStorage.setItem('authToken', response.token);
-  console.log('Received JWT Token:', response.token);
   return response;
+}
+
+export async function registerUser(userData) {
+  return apiRequest('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  });
 }
 
 export function logout() {
@@ -85,15 +90,41 @@ export function isAuthenticated() {
 export function getCurrentUser() {
   const token = localStorage.getItem('authToken');
   if (token) {
-    const decodedToken = jwtDecode(token);
-    return {
-      id: decodedToken.sub,
-      username: decodedToken.username,
-      email: decodedToken.email,
-      avatar: decodedToken.avatar
-    };
+    try {
+      const decodedToken = jwtDecode(token);
+      return {
+        id: decodedToken.id,
+        username: decodedToken.user,
+        email: decodedToken.email,
+        avatar: decodedToken.avatar
+      };
+    } catch (error) {
+      console.error('Error decoding token');
+      return null;
+    }
   }
   return null;
+}
+
+export async function getUserInfo() {
+  const currentUser = getCurrentUser();
+  if (!currentUser) throw new Error('No authenticated user');
+  return apiRequest(`/users/${currentUser.id}`);
+}
+
+export async function updateUserProfile(userData) {
+  return apiRequest('/user', {
+    method: 'PUT',
+    body: JSON.stringify(userData),
+  });
+}
+
+export async function deleteUser() {
+  const currentUser = getCurrentUser();
+  if (!currentUser) throw new Error('No authenticated user');
+  return apiRequest(`/users/${currentUser.id}`, {
+    method: 'DELETE',
+  });
 }
 
 export async function getAllMessages(conversationId = 'default') {
@@ -109,27 +140,6 @@ export async function createMessage(messageData) {
 
 export async function deleteMessage(messageId) {
   return apiRequest(`/messages/${messageId}`, {
-    method: 'DELETE',
-  });
-}
-
-export async function getUserInfo() {
-  const user = getCurrentUser();
-  if (!user) throw new Error('No authenticated user');
-  return apiRequest(`/users/${user.id}`);
-}
-
-export async function updateUserProfile(userData) {
-  return apiRequest('/user', {
-    method: 'PUT',
-    body: JSON.stringify(userData),
-  });
-}
-
-export async function deleteUser() {
-  const user = getCurrentUser();
-  if (!user) throw new Error('No authenticated user');
-  return apiRequest(`/users/${user.id}`, {
     method: 'DELETE',
   });
 }
