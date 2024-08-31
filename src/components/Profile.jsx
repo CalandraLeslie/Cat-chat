@@ -4,33 +4,36 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const [user, setUser] = useState(getCurrentUser());
+  const [user, setUser] = useState(() => {
+    const currentUser = getCurrentUser();
+    return currentUser ? { ...currentUser, bio: '' } : null;
+  });
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    avatar: '',
+    username: user ? user.username : '',
+    email: user ? user.email : '',
+    avatar: user ? user.avatar : '',
     bio: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUserInfo();
+    if (user) {
+      fetchUserInfo();
+    }
   }, []);
 
   const fetchUserInfo = async () => {
     try {
       const userData = await getUserInfo();
-      setUser(userData);
-      setFormData({
-        username: userData.username,
-        email: userData.email,
-        avatar: userData.avatar,
+      setUser(prevUser => ({ ...prevUser, ...userData }));
+      setFormData(prevData => ({
+        ...prevData,
         bio: userData.bio || '',
-      });
+      }));
     } catch (error) {
       console.error('Failed to fetch user info:', error);
-      toast.error('Failed to load user information');
+      toast.error('Failed to load additional user information');
     }
   };
 
@@ -66,7 +69,7 @@ const Profile = () => {
   };
 
   if (!user) {
-    return <div>Loading profile...</div>;
+    return <div>No user information available. Please log in again.</div>;
   }
 
   return (
