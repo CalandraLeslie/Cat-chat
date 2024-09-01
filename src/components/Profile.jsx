@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentUser, getUserInfo, updateUserProfile, deleteUser } from '../services/Api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import catChatIcon from '../images/catchat.jpg';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -20,11 +21,11 @@ const Profile = () => {
       setFormData({
         email: currentUser.email || '',
         avatar: currentUser.avatar || '',
-        bio: '',
+        bio: currentUser.bio || '',
       });
       fetchAdditionalUserInfo();
     } else {
-      navigate('/login');
+      navigate('/');
     }
   }, [navigate]);
 
@@ -46,16 +47,35 @@ const Profile = () => {
     setFormData(prevData => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSave = async () => {
     try {
-      await updateUserProfile(formData);
-      setUser(prevUser => ({ ...prevUser, ...formData }));
+      const updatedData = {
+        email: formData.email,
+        bio: formData.bio,
+      };
+
+      // Only include avatar in the update if it's not empty
+      if (formData.avatar.trim() !== '') {
+        updatedData.avatar = formData.avatar;
+      }
+
+      await updateUserProfile(updatedData);
+      setUser(prevUser => ({ ...prevUser, ...updatedData }));
       setIsEditing(false);
       toast.success('Profile updated successfully!');
     } catch (error) {
       toast.error('Failed to update profile');
     }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reset form data to current user data
+    setFormData({
+      email: user.email || '',
+      avatar: user.avatar || '',
+      bio: user.bio || '',
+    });
   };
 
   const handleDeleteAccount = async () => {
@@ -77,61 +97,45 @@ const Profile = () => {
   return (
     <div className="container">
       <h1>User Profile</h1>
-      {user.avatar && (
-        <img 
-          src={user.avatar} 
-          alt="User Avatar" 
-          className="profile-avatar" 
-          style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%' }}
-        />
-      )}
-      <div className="profile-info">
+      <img src={user.avatar || catChatIcon} alt="User Avatar" className="cat-icon" />
+      <div className="auth-form">
         {isEditing ? (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
             <p><strong>Username:</strong> {user.username}</p>
-            <div>
-              <label htmlFor="email">Email:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="avatar">Avatar URL:</label>
-              <input
-                type="url"
-                id="avatar"
-                name="avatar"
-                value={formData.avatar}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="bio">Bio:</label>
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                rows="4"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">Save Changes</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(false)}>Cancel</button>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+            />
+            <input
+              type="url"
+              name="avatar"
+              value={formData.avatar}
+              onChange={handleChange}
+              placeholder="Avatar URL (optional)"
+            />
+            <textarea
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              placeholder="Your bio"
+              rows="4"
+            />
+            <button type="submit" className="submit-button">Save Changes</button>
+            <button type="button" className="submit-button" onClick={handleCancel}>Cancel</button>
           </form>
         ) : (
           <div>
             <p><strong>Username:</strong> {user.username}</p>
             <p><strong>Email:</strong> {user.email}</p>
             <p><strong>Bio:</strong> {user.bio || 'No bio added yet.'}</p>
-            <button onClick={() => setIsEditing(true)} className="btn btn-primary">Edit Profile</button>
+            <button onClick={() => setIsEditing(true)} className="submit-button">Edit Profile</button>
           </div>
         )}
-        <button onClick={handleDeleteAccount} className="btn btn-danger mt-3">Delete Account</button>
+        <button onClick={handleDeleteAccount} className="submit-button delete-account-btn">Delete Account</button>
       </div>
     </div>
   );

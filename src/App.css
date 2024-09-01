@@ -369,3 +369,175 @@ h1 {
 .delete-account-btn:hover {
   background-color: #c82333;
 }
+/* Existing styles ... */
+
+/* Profile page styles */
+.profile-container {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.profile-info p {
+  margin: 10px 0;
+  cursor: default;
+}
+
+.profile-info p:hover {
+  color: black;
+}
+
+.edit-button,
+.cancel-button,
+.submit-button {
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.edit-button:hover,
+.cancel-button:hover,
+.submit-button:hover {
+  background-color: #C19A6B;
+}
+
+.delete-account-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+/* ... existing styles ... */
+
+.auth-form input,
+.auth-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.auth-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ... rest of the existing styles ... */
+/* Existing styles ... */
+
+/* Existing styles ... */
+
+/* Profile page styles */
+.profile-container {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 20px auto;
+  display: block;
+  border: 3px solid #D2B48C;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.profile-info p {
+  margin: 10px 0;
+}
+
+/* Ensure consistency for input fields and textareas */
+.auth-form input,
+.auth-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.auth-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Button styles (already existing, but ensuring consistency) */
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.submit-button:hover {
+  background-color: #C19A6B;
+}
+
+/* Delete account button specific styles */
+.delete-account-btn {
+  background-color: #dc3545;
+  margin-top: 20px;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 10px;
+  }
+  
+  .auth-form input,
+  .auth-form textarea,
+  .submit-button {
+    font-size: 14px;
+  }
+}

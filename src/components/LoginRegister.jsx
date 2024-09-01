@@ -30,15 +30,30 @@ const LoginRegister = ({ onLogin }) => {
         response = await login({ username: formData.username, password: formData.password });
         console.log('Login response:', response);
         toast.success('Login successful!');
+        onLogin(response);
       } else {
-        response = await registerUser(formData);
+        const registrationData = {
+          ...formData,
+          avatar: formData.avatar || catChatIcon // Use catChatIcon if no avatar is provided
+        };
+        response = await registerUser(registrationData);
         console.log('Registration response:', response);
         toast.success('Registration successful! You are now logged in.');
+        // Log in the user immediately after successful registration
+        const loginResponse = await login({ username: formData.username, password: formData.password });
+        onLogin(loginResponse);
       }
-      onLogin(response);
     } catch (error) {
       console.error('Authentication error:', error);
-      toast.error(error.message);
+      if (isLoginForm) {
+        toast.error('We have no user under this name');
+      } else {
+        if (error.message.includes('already exists')) {
+          toast.error('User already exists');
+        } else {
+          toast.error(error.message);
+        }
+      }
     }
   };
 
@@ -83,7 +98,7 @@ const LoginRegister = ({ onLogin }) => {
               <input
                 type="url"
                 name="avatar"
-                placeholder="Avatar URL"
+                placeholder="Avatar URL (optional)"
                 value={formData.avatar}
                 onChange={handleChange}
               />
