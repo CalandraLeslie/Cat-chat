@@ -32,8 +32,8 @@ const Profile = ({ onLogout }) => {
       try {
         await deleteUser();
         toast.success('Account deleted successfully.');
-        onLogout(); // Call the logout function to clear the auth state
-        navigate('/'); // Navigate to the root, which should now show LoginRegister
+        onLogout();
+        navigate('/');
       } catch (error) {
         toast.error('Failed to delete account');
       }

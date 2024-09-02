@@ -541,3 +541,443 @@ h1 {
     font-size: 14px;
   }
 }
+/* General body styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Main container styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Header styles */
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Cat icon styles */
+.cat-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+/* Authentication form styles */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-form h2 {
+  margin-top: 0;
+  color: #333;
+  text-align: center;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Button styles */
+.submit-button, 
+.logout-button, 
+.auth-form button,
+.nav-button {
+  width: 200px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Hover effect for all buttons */
+.submit-button:hover, 
+.logout-button:hover, 
+.auth-form button:hover,
+.nav-button:hover {
+  background-color: #C19A6B;
+}
+
+/* Error message styles */
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Form toggle link styles */
+.auth-form p {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.switch-form {
+  color: #D2B48C;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+/* Welcome container styles */
+.welcome-container {
+  text-align: center;
+}
+
+.welcome-container p {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 480px) {
+  .container {
+    max-width: 100%;
+    padding: 10px;
+  }
+  
+  .cat-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .auth-form input,
+  .submit-button,
+  .logout-button,
+  .nav-button {
+    font-size: 14px;
+  }
+}
+
+/* Profile page styles */
+.profile-container {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 20px auto;
+  display: block;
+  border: 3px solid #D2B48C;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.profile-info p {
+  margin: 10px 0;
+}
+
+/* Delete account button styles */
+.delete-account-btn {
+  background-color: #dc3545;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+
+/* SideNav styles */
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.side-nav li {
+  margin-bottom: 10px;
+}
+
+.side-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.side-nav button {
+  width: 100%;
+  padding: 10px;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Content area adjustment for SideNav */
+.content {
+  margin-left: 220px;
+  padding: 20px;
+}
+
+/* Hover styles for side nav */
+.side-nav a:hover {
+  color: #D2B48C;
+}
+
+.side-nav button:hover {
+  background-color: #C19A6B;
+}
+/* Existing styles... */
+
+/* Button styles */
+.submit-button, 
+.logout-button, 
+.auth-form button,
+.auth-form a {
+  width: 200px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Hover effect for all buttons */
+.submit-button:hover, 
+.logout-button:hover, 
+.auth-form button:hover,
+.auth-form a:hover {
+  background-color: #C19A6B;
+}
+
+/* Delete account button styles */
+.delete-account-btn {
+  background-color: #dc3545;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+
+/* Existing styles... */
+
+/* Remove any conflicting styles */
+.nav-button,
+.nav-button:hover {
+  background-color: initial;
+  color: initial;
+}
+
+/* Ensure links in auth-form have consistent styling */
+.auth-form a {
+  color: white;
+}
+
+/* Existing styles... */
+/* Existing styles... */
+
+/* Button styles */
+.submit-button, 
+.logout-button, 
+.auth-form button,
+.auth-form .submit-button {
+  width: 200px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Hover effect for all buttons */
+.submit-button:hover, 
+.logout-button:hover, 
+.auth-form button:hover,
+.auth-form .submit-button:hover {
+  background-color: #C19A6B;
+}
+
+/* Delete account button styles */
+.delete-account-btn {
+  background-color: #dc3545;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+
+/* Ensure links in auth-form have consistent styling */
+.auth-form .submit-button {
+  color: white;
+}
+
+/* Existing styles... */
+/* Existing styles... */
+
+/* Button styles */
+.submit-button, 
+.logout-button, 
+.auth-form button,
+.auth-form .submit-button {
+  width: 200px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Hover effect for all buttons */
+.submit-button:hover, 
+.logout-button:hover, 
+.auth-form button:hover,
+.auth-form .submit-button:hover {
+  background-color: #C19A6B;
+}
+
+/* Delete account button styles */
+.delete-account-btn {
+  background-color: #dc3545 !important; /* Red color */
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333 !important; /* Darker red on hover */
+}
+
+/* Existing styles... */
+
+/* Existing styles ... */
+
+/* Profile page styles */
+.profile-container {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 20px auto;
+  display: block;
+  border: 3px solid #D2B48C;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.profile-info p {
+  margin: 10px 0;
+}
+
+/* Center the buttons in the Profile component */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Style for all buttons in the Profile component */
+.auth-form button {
+  width: 200px; /* Set a fixed width for consistency */
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for all buttons */
+.auth-form button:hover {
+  background-color: #C19A6B;
+}
+
+/* Specific style for the delete account button */
+.delete-account-btn {
+  background-color: #dc3545;
+}
+
+/* Hover effect for the delete account button */
+.delete-account-btn:hover {
+  background-color: #c82333;
+}
+
+/* Existing styles ... */
