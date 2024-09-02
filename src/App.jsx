@@ -71,7 +71,7 @@ function App() {
               path="/profile" 
               element={
                 isAuth ? 
-                  <Profile user={user} updateUser={setUser} /> : 
+                  <Profile user={user} onLogout={handleLogout} /> : 
                   <Navigate to="/" />
               } 
             />

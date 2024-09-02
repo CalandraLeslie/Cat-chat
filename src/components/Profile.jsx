@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser, getUserInfo } from '../services/Api';
+import { getCurrentUser, getUserInfo, deleteUser } from '../services/Api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import catChatIcon from '../images/catchat.jpg';
 
-const Profile = () => {
+const Profile = ({ onLogout }) => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -27,6 +27,19 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        await deleteUser();
+        toast.success('Account deleted successfully.');
+        onLogout(); // Call the logout function to clear the auth state
+        navigate('/'); // Navigate to the root, which should now show LoginRegister
+      } catch (error) {
+        toast.error('Failed to delete account');
+      }
+    }
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -40,6 +53,7 @@ const Profile = () => {
           <p><strong>Username:</strong> {user.username}</p>
           <p><strong>Email:</strong> {user.email}</p>
         </div>
+        <button onClick={handleDeleteAccount} className="submit-button delete-account-btn">Delete Account</button>
       </div>
     </div>
   );
