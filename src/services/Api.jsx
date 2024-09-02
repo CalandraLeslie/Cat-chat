@@ -53,6 +53,9 @@ async function apiRequest(url, options = {}) {
 
     if (!response.ok) {
       const error = await response.json();
+      if (response.status === 401) {
+        throw new Error('Invalid credentials');
+      }
       throw new Error(error.error || 'An error occurred');
     }
 
@@ -64,12 +67,19 @@ async function apiRequest(url, options = {}) {
 }
 
 export async function login(credentials) {
-  const response = await apiRequest('/auth/token', {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  });
-  localStorage.setItem('authToken', response.token);
-  return response;
+  try {
+    const response = await apiRequest('/auth/token', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+    localStorage.setItem('authToken', response.token);
+    return response;
+  } catch (error) {
+    if (error.message === 'Invalid credentials') {
+      throw new Error('Invalid credentials');
+    }
+    throw error;
+  }
 }
 
 export async function registerUser(userData) {
@@ -141,6 +151,24 @@ export async function createMessage(messageData) {
 export async function deleteMessage(messageId) {
   return apiRequest(`/messages/${messageId}`, {
     method: 'DELETE',
+  });
+}
+
+export async function searchUsers(username) {
+  return apiRequest(`/users/search?username=${encodeURIComponent(username)}`);
+}
+
+export async function inviteToChat(userId, conversationId) {
+  return apiRequest('/invitations', {
+    method: 'POST',
+    body: JSON.stringify({ userId, conversationId }),
+  });
+}
+
+export async function createConversation(name) {
+  return apiRequest('/conversations', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
   });
 }
 

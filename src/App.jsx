@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoginRegister from './components/LoginRegister';
 import Profile from './components/Profile';
@@ -10,15 +10,41 @@ import SideNav from './components/SideNav';
 import { logout, isAuthenticated, getUserInfo } from './services/Api';
 import './App.css';
 
+const INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 function App() {
   const [isAuth, setIsAuth] = useState(isAuthenticated());
   const [user, setUser] = useState(null);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+
+  const handleActivity = useCallback(() => {
+    setLastActivity(Date.now());
+  }, []);
 
   useEffect(() => {
     if (isAuth) {
       fetchUserInfo();
     }
   }, [isAuth]);
+
+  useEffect(() => {
+    if (isAuth) {
+      const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+      events.forEach(event => window.addEventListener(event, handleActivity));
+
+      const checkInactivity = setInterval(() => {
+        if (Date.now() - lastActivity > INACTIVE_TIMEOUT) {
+          handleLogout();
+          toast.info('You have been logged out due to inactivity.');
+        }
+      }, 1000); // Check every second
+
+      return () => {
+        events.forEach(event => window.removeEventListener(event, handleActivity));
+        clearInterval(checkInactivity);
+      };
+    }
+  }, [isAuth, lastActivity, handleActivity]);
 
   const fetchUserInfo = async () => {
     try {
@@ -36,6 +62,7 @@ function App() {
   const handleLogin = async (loginData) => {
     setIsAuth(true);
     localStorage.setItem('authToken', loginData.token);
+    setLastActivity(Date.now());
     await fetchUserInfo();
   };
 
@@ -71,7 +98,7 @@ function App() {
               path="/profile" 
               element={
                 isAuth ? 
-                  <Profile user={user} onLogout={handleLogout} /> : 
+                  <Profile user={user} updateUser={setUser} /> : 
                   <Navigate to="/" />
               } 
             />

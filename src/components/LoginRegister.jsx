@@ -46,7 +46,11 @@ const LoginRegister = ({ onLogin }) => {
     } catch (error) {
       console.error('Authentication error:', error);
       if (isLoginForm) {
-        toast.error('We have no user under this name');
+        if (error.message === 'Invalid credentials') {
+          toast.error('Invalid password. Please try again.');
+        } else {
+          toast.error('Login failed. Please check your username and password.');
+        }
       } else {
         if (error.message.includes('already exists')) {
           toast.error('User already exists');

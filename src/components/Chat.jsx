@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { getAllMessages, createMessage, deleteMessage } from '../services/Api';
+import { getAllMessages, createMessage, deleteMessage, searchUsers, inviteToChat, createConversation } from '../services/Api';
+import { toast } from 'react-toastify';
 
 const Chat = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentConversationId, setCurrentConversationId] = useState('default');
 
   useEffect(() => {
     fetchMessages();
-  }, []);
+  }, [currentConversationId]);
 
   const fetchMessages = async () => {
     try {
-      const data = await getAllMessages();
+      const data = await getAllMessages(currentConversationId);
       setMessages(data);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -24,7 +28,7 @@ const Chat = ({ user }) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     try {
-      await createMessage({ content: newMessage, userId: user.id });
+      await createMessage({ content: newMessage, userId: user.id, conversationId: currentConversationId });
       setNewMessage('');
       fetchMessages();
     } catch (err) {
@@ -43,9 +47,55 @@ const Chat = ({ user }) => {
     }
   };
 
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    try {
+      const results = await searchUsers(searchTerm);
+      setSearchResults(results);
+    } catch (err) {
+      console.error('Failed to search users:', err);
+      toast.error('Failed to search users. Please try again.');
+    }
+  };
+
+  const handleInvite = async (userId) => {
+    try {
+      if (currentConversationId === 'default') {
+        const newConversation = await createConversation(`Chat with ${user.username}`);
+        setCurrentConversationId(newConversation.id);
+      }
+      await inviteToChat(userId, currentConversationId);
+      toast.success('Invitation sent successfully!');
+      setSearchResults([]);
+      setSearchTerm('');
+    } catch (err) {
+      console.error('Failed to invite user:', err);
+      toast.error('Failed to invite user. Please try again.');
+    }
+  };
+
   return (
     <div className="container">
       <h1>Chat</h1>
+      <div className="invite-section">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search users to invite..."
+        />
+        <button onClick={handleSearch} className="submit-button">Search</button>
+      </div>
+      {searchResults.length > 0 && (
+        <div className="search-results">
+          {searchResults.map((result) => (
+            <div key={result.id} className="search-result">
+              <span>{result.username}</span>
+              <button onClick={() => handleInvite(result.id)} className="submit-button">Invite</button>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="chat-messages">
         {messages.map((msg) => (
           <div key={msg.id} className="message">

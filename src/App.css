@@ -209,3 +209,43 @@ h1 {
 }
 
 /* Rest of the existing styles... */
+/* Existing styles... */
+
+.invite-section {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.invite-section input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-results {
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.search-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.search-result:last-child {
+  border-bottom: none;
+}
+
+.search-result button {
+  padding: 5px 10px;
+  font-size: 0.9em;
+}
+
+/* Rest of the existing styles... */
