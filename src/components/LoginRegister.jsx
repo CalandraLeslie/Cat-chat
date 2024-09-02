@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { login, registerUser, fetchCsrfToken } from '../services/Api';
 import { toast } from 'react-toastify';
-import catChatIcon from '../images/catchat.jpg';
+
+const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
 
 const LoginRegister = ({ onLogin }) => {
   const [isLoginForm, setIsLoginForm] = useState(true);
@@ -34,12 +35,11 @@ const LoginRegister = ({ onLogin }) => {
       } else {
         const registrationData = {
           ...formData,
-          avatar: formData.avatar || catChatIcon // Use catChatIcon if no avatar is provided
+          avatar: formData.avatar || DEFAULT_AVATAR
         };
         response = await registerUser(registrationData);
         console.log('Registration response:', response);
         toast.success('Registration successful! You are now logged in.');
-        // Log in the user immediately after successful registration
         const loginResponse = await login({ username: formData.username, password: formData.password });
         onLogin(loginResponse);
       }
@@ -65,7 +65,7 @@ const LoginRegister = ({ onLogin }) => {
   return (
     <div className="container">
       <h1>Cat Chat</h1>
-      <img src={catChatIcon} alt="Cat Chat Icon" className="cat-icon" />
+      <img src={DEFAULT_AVATAR} alt="Cat Chat Icon" className="cat-icon" />
       <div className="auth-form">
         <h2>{isLoginForm ? 'Login' : 'Register'}</h2>
         <form onSubmit={handleSubmit}>

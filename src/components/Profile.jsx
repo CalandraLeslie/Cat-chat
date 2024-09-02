@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentUser, getUserInfo, deleteUser } from '../services/Api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import catChatIcon from '../images/catchat.jpg';
+
+const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
 
 const Profile = ({ onLogout }) => {
   const [user, setUser] = useState(null);
@@ -47,7 +48,12 @@ const Profile = ({ onLogout }) => {
   return (
     <div className="container">
       <h1>User Profile</h1>
-      <img src={user.avatar || catChatIcon} alt="User Avatar" className="cat-icon" />
+      <img 
+        src={user.avatar || DEFAULT_AVATAR} 
+        alt="User Avatar" 
+        className="cat-icon" 
+        onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
+      />
       <div className="auth-form">
         <div>
           <p><strong>Username:</strong> {user.username}</p>

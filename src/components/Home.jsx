@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { getCurrentUser } from '../services/Api';
 
+const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
+
 const Home = () => {
   const user = getCurrentUser();
 
@@ -10,7 +12,7 @@ const Home = () => {
       <h1>Cat Chat</h1>
       {user && (
         <>
-          <img src={user.avatar} alt="User Avatar" className="cat-icon" />
+          <img src={user.avatar || DEFAULT_AVATAR} alt="User Avatar" className="cat-icon" onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }} />
           <h2>{user.username}</h2>
         </>
       )}
