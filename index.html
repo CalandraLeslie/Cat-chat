@@ -1,40 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="images" href="src/images/paw.png">
-    <title>Cat Chat</title>
-    <link rel="stylesheet" href="/src/App.css">
+  <meta charset="UTF-8" />
+  <link rel="icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
+  <meta
+    name="description"
+    content="Cat Chat - A secure messaging application"
+  />
+  <meta http-equiv="Content-Security-Policy" 
+    content="default-src 'self'; 
+             img-src 'self' https://i.ibb.co https://imgbb.com https://freeimage.host https://i.pravatar.cc data:; 
+             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; 
+             style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; 
+             connect-src 'self' https://chatify-api.up.railway.app;
+             font-src 'self' https://cdnjs.cloudflare.com;"
+  />
+  <link rel="apple-touch-icon" href="/logo192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/src/App.css">
+  <title>Cat Chat</title>
 </head>
 <body>
-    <div id="root">
-        <!-- Your React app will be rendered here -->
-        <div class="container">
-            <h1>Cat Chat</h1>
-            <img src="/src/images/catchat.jpg" alt="Cat Chat Icon" class="cat-icon">
-            <div class="auth-form">
-                <h2>Login / Register</h2>
-                <div class="login-form">
-                    <!-- Login form will be replaced by your React component -->
-                    <input type="text" placeholder="Username" />
-                    <input type="password" placeholder="Password" />
-                    <button>Login</button>
-                </div>
-                <div class="register-form" style="display: none;">
-                    <!-- Registration form will be replaced by your React component -->
-                    <input type="text" placeholder="Username" />
-                    <input type="password" placeholder="Password" />
-                    <input type="email" placeholder="Email" />
-                    <input type="url" placeholder="Avatar URL" />
-                    <button>Register</button>
-                </div>
-                <p>Don't have an account? <span class="switch-form">Register</span></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Load your React application -->
-    <script src="/src/main.jsx" type="module"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
