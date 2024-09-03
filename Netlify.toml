@@ -1,6 +1,6 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; img-src 'self' https://i.ibb.co data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' https://chatify-api.up.railway.app; font-src 'self' https://cdnjs.cloudflare.com;"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' https://imgbb.com https://i.ibb.co https://freeimage.host https://i.pravatar.cc data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' https://chatify-api.up.railway.app; font-src 'self' https://cdnjs.cloudflare.com;"
     Referrer-Policy = "no-referrer-when-downgrade"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
