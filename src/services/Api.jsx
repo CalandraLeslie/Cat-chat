@@ -83,10 +83,18 @@ export async function login(credentials) {
 }
 
 export async function registerUser(userData) {
-  return apiRequest('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
+  try {
+    const response = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+    return response;
+  } catch (error) {
+    if (error.message.includes('already exists')) {
+      throw new Error('Username or email already exists');
+    }
+    throw error;
+  }
 }
 
 export function logout() {

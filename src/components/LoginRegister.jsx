@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { login, registerUser, fetchCsrfToken } from '../services/Api';
+import React, { useState } from 'react';
+import { login, registerUser } from '../services/Api';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
 
@@ -12,10 +13,8 @@ const LoginRegister = ({ onLogin }) => {
     email: '',
     avatar: ''
   });
-
-  useEffect(() => {
-    fetchCsrfToken().catch(console.error);
-  }, []);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,46 +23,50 @@ const LoginRegister = ({ onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     try {
-      let response;
       if (isLoginForm) {
-        response = await login({ username: formData.username, password: formData.password });
+        const response = await login({ username: formData.username, password: formData.password });
         console.log('Login response:', response);
-        toast.success('Login successful!');
+        
+        // Call the onLogin function passed from App component
         onLogin(response);
+
+        toast.success('Login successful!');
+        navigate('/chat');
       } else {
         const registrationData = {
           ...formData,
           avatar: formData.avatar || DEFAULT_AVATAR
         };
-        response = await registerUser(registrationData);
-        console.log('Registration response:', response);
-        toast.success('Registration successful! You are now logged in.');
-        const loginResponse = await login({ username: formData.username, password: formData.password });
-        onLogin(loginResponse);
+        await registerUser(registrationData);
+        toast.success('Registration successful! Please log in.');
+        setIsLoginForm(true);
       }
     } catch (error) {
       console.error('Authentication error:', error);
       if (isLoginForm) {
         if (error.message === 'Invalid credentials') {
-          toast.error('Invalid password. Please try again.');
+          setError('Invalid credentials. Please check your username and password.');
         } else {
-          toast.error('Login failed. Please check your username and password.');
+          setError('Login failed. Please try again.');
         }
       } else {
         if (error.message.includes('already exists')) {
-          toast.error('User already exists');
+          setError('Username or email already exists');
         } else {
-          toast.error(error.message);
+          setError(error.message);
         }
       }
+      toast.error(error.message);
     }
   };
 
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
     setFormData({ username: '', password: '', email: '', avatar: '' });
+    setError('');
   };
 
   return (
@@ -72,6 +75,7 @@ const LoginRegister = ({ onLogin }) => {
       <img src={DEFAULT_AVATAR} alt="Cat Chat Icon" className="cat-icon" />
       <div className="auth-form">
         <h2>{isLoginForm ? 'Login' : 'Register'}</h2>
+        {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
           <input
             type="text"

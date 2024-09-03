@@ -10,7 +10,7 @@ import SideNav from './components/SideNav';
 import { logout, isAuthenticated, getUserInfo } from './services/Api';
 import './App.css';
 
-const INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+const INACTIVE_TIMEOUT = 3 * 60 * 1000; // 3 minutes in milliseconds
 
 function App() {
   const [isAuth, setIsAuth] = useState(isAuthenticated());
@@ -59,23 +59,34 @@ function App() {
     }
   };
 
-  const handleLogin = async (loginData) => {
+  const handleLogin = (loginData) => {
     setIsAuth(true);
+    setUser({
+      id: loginData.id,
+      username: loginData.user,
+      avatar: loginData.avatar
+    });
     localStorage.setItem('authToken', loginData.token);
+    localStorage.setItem('userId', loginData.id);
+    localStorage.setItem('username', loginData.user);
+    localStorage.setItem('avatar', loginData.avatar);
     setLastActivity(Date.now());
-    await fetchUserInfo();
   };
 
   const handleLogout = () => {
     logout();
     setIsAuth(false);
     setUser(null);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    localStorage.removeItem('avatar');
   };
 
   return (
     <Router>
       <div className="App">
-        {isAuth && <SideNav onLogout={handleLogout} />}
+        {isAuth && <SideNav user={user} onLogout={handleLogout} />}
         <div className="content">
           <Routes>
             <Route 
