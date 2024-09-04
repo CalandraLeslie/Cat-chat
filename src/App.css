@@ -249,3 +249,224 @@ h1 {
 }
 
 /* Rest of the existing styles... */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.cat-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-form h2 {
+  margin-top: 0;
+  color: #333;
+  text-align: center;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.submit-button, 
+.logout-button, 
+.auth-form button,
+.auth-form .submit-button {
+  width: 200px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.submit-button:hover, 
+.logout-button:hover, 
+.auth-form button:hover,
+.auth-form .submit-button:hover {
+  background-color: #C19A6B;
+}
+
+.delete-account-btn {
+  background-color: #dc3545 !important;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333 !important;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.switch-form {
+  color: #D2B48C;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.side-nav li {
+  margin-bottom: 10px;
+}
+
+.side-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.side-nav a:hover {
+  color: #D2B48C;
+}
+
+.content {
+  margin-left: 220px;
+  padding: 20px;
+}
+
+/* Chat specific styles */
+.chat-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+}
+
+.own-message {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+
+.other-message {
+  align-self: flex-start;
+  background-color: #f1f0f0;
+}
+
+.delete-button {
+  margin-left: 10px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.message-form {
+  display: flex;
+  gap: 10px;
+}
+
+.message-form input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.message-form button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .container {
+    max-width: 100%;
+    padding: 10px;
+  }
+  
+  .cat-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .auth-form input,
+  .submit-button,
+  .logout-button {
+    font-size: 14px;
+  }
+}

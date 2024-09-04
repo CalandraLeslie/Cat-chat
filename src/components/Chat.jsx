@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAllMessages, createMessage, deleteMessage, searchUsers, inviteToChat, createConversation } from '../services/Api';
+import { getAllMessages, createMessage, deleteMessage, searchUsers, createConversation } from '../services/Api';
+import DOMPurify from 'dompurify';
 import { toast } from 'react-toastify';
 
 const Chat = ({ user }) => {
@@ -8,13 +9,16 @@ const Chat = ({ user }) => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [currentConversationId, setCurrentConversationId] = useState('default');
+  const [currentConversationId, setCurrentConversationId] = useState(null);
 
   useEffect(() => {
-    fetchMessages();
+    if (currentConversationId) {
+      fetchMessages();
+    }
   }, [currentConversationId]);
 
   const fetchMessages = async () => {
+    if (!currentConversationId) return;
     try {
       const data = await getAllMessages(currentConversationId);
       setMessages(data);
@@ -27,8 +31,13 @@ const Chat = ({ user }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+    if (!currentConversationId) {
+      setError('No active conversation. Please start a conversation first.');
+      return;
+    }
     try {
-      await createMessage({ content: newMessage, userId: user.id, conversationId: currentConversationId });
+      const sanitizedMessage = DOMPurify.sanitize(newMessage);
+      await createMessage({ content: sanitizedMessage, userId: user.id, conversationId: currentConversationId });
       setNewMessage('');
       fetchMessages();
     } catch (err) {
@@ -51,38 +60,40 @@ const Chat = ({ user }) => {
     if (!searchTerm.trim()) return;
     try {
       const results = await searchUsers(searchTerm);
-      setSearchResults(results);
+      // Sort results to show usernames first
+      const sortedResults = results.sort((a, b) => 
+        a.username.toLowerCase().localeCompare(b.username.toLowerCase())
+      );
+      setSearchResults(sortedResults);
     } catch (err) {
       console.error('Failed to search users:', err);
       toast.error('Failed to search users. Please try again.');
     }
   };
 
-  const handleInvite = async (userId) => {
+  const startConversation = async (otherUser) => {
     try {
-      if (currentConversationId === 'default') {
-        const newConversation = await createConversation(`Chat with ${user.username}`);
-        setCurrentConversationId(newConversation.id);
-      }
-      await inviteToChat(userId, currentConversationId);
-      toast.success('Invitation sent successfully!');
+      const conversationName = `Chat between ${user.username} and ${otherUser.username}`;
+      const newConversation = await createConversation(conversationName);
+      setCurrentConversationId(newConversation.id);
+      toast.success(`Started a conversation with ${otherUser.username}`);
       setSearchResults([]);
       setSearchTerm('');
     } catch (err) {
-      console.error('Failed to invite user:', err);
-      toast.error('Failed to invite user. Please try again.');
+      console.error('Failed to start conversation:', err);
+      toast.error('Failed to start conversation. Please try again.');
     }
   };
 
   return (
-    <div className="container">
+    <div className="chat-container">
       <h1>Chat</h1>
-      <div className="invite-section">
+      <div className="search-section">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search users to invite..."
+          placeholder="Search users to start a chat..."
         />
         <button onClick={handleSearch} className="submit-button">Search</button>
       </div>
@@ -91,33 +102,44 @@ const Chat = ({ user }) => {
           {searchResults.map((result) => (
             <div key={result.id} className="search-result">
               <span>{result.username}</span>
-              <button onClick={() => handleInvite(result.id)} className="submit-button">Invite</button>
+              <button onClick={() => startConversation(result)} className="submit-button">
+                Start Chat
+              </button>
             </div>
           ))}
         </div>
       )}
-      <div className="chat-messages">
-        {messages.map((msg) => (
-          <div key={msg.id} className="message">
-            <strong>{msg.user.username}: </strong>
-            <span>{msg.content}</span>
-            {msg.user.id === user.id && (
-              <button onClick={() => handleDelete(msg.id)} className="submit-button">Delete</button>
-            )}
+      {currentConversationId ? (
+        <>
+          <div className="chat-messages">
+            {messages.map((msg) => (
+              <div 
+                key={msg.id} 
+                className={`message ${msg.user.id === user.id ? 'own-message' : 'other-message'}`}
+              >
+                <strong>{msg.user.username}: </strong>
+                <span>{msg.content}</span>
+                {msg.user.id === user.id && (
+                  <button onClick={() => handleDelete(msg.id)} className="delete-button">Delete</button>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {error && <p className="error-message">{error}</p>}
-      <form onSubmit={handleSubmit} className="auth-form">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          required
-        />
-        <button type="submit" className="submit-button">Send</button>
-      </form>
+          {error && <p className="error-message">{error}</p>}
+          <form onSubmit={handleSubmit} className="message-form">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              required
+            />
+            <button type="submit" className="submit-button">Send</button>
+          </form>
+        </>
+      ) : (
+        <p>No active conversation. Search for a user to start chatting.</p>
+      )}
     </div>
   );
 };
