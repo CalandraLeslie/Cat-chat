@@ -209,6 +209,49 @@ h1 {
 }
 
 /* Rest of the existing styles... */
+<<<<<<< HEAD
+=======
+/* Existing styles... */
+
+.invite-section {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.invite-section input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-results {
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.search-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.search-result:last-child {
+  border-bottom: none;
+}
+
+.search-result button {
+  padding: 5px 10px;
+  font-size: 0.9em;
+}
+
+/* Rest of the existing styles... */
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -262,7 +305,11 @@ h1 {
 .auth-form input {
   width: 100%;
   padding: 10px;
+<<<<<<< HEAD
   margin-bottom: 15px; /* Increased margin for better spacing */
+=======
+  margin-bottom: 10px;
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
@@ -272,7 +319,11 @@ h1 {
 .logout-button, 
 .auth-form button,
 .auth-form .submit-button {
+<<<<<<< HEAD
   width: 100%; /* Changed to 100% for full width */
+=======
+  width: 200px;
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
   padding: 10px;
   margin: 10px 0;
   background-color: #D2B48C;
@@ -315,13 +366,53 @@ h1 {
   font-weight: bold;
 }
 
+<<<<<<< HEAD
 /* Rest of the existing styles... */
+=======
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.side-nav li {
+  margin-bottom: 10px;
+}
+
+.side-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.side-nav a:hover {
+  color: #D2B48C;
+}
+
+.content {
+  margin-left: 220px;
+  padding: 20px;
+}
+
+/* Chat specific styles */
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
 .chat-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
 }
 
+<<<<<<< HEAD
 .messages-container {
   height: 400px;
   overflow-y: auto;
@@ -369,30 +460,7 @@ h1 {
 
 .text {
   margin: 0;
-}
-
-.message-form {
-  display: flex;
-}
-
-.message-form input {
-  flex-grow: 1;
-  padding: 10px;
-  margin-right: 10px;
-}
-
-.message-form button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.error-message {
-  color: red;
-  margin-bottom: 10px;
-}
+=======
 .chat-messages {
   display: flex;
   flex-direction: column;
@@ -403,6 +471,89 @@ h1 {
 }
 
 .message {
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+}
+
+.own-message {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+
+.other-message {
+  align-self: flex-start;
+  background-color: #f1f0f0;
+}
+
+.delete-button {
+  margin-left: 10px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
+}
+
+.message-form {
+  display: flex;
+<<<<<<< HEAD
+=======
+  gap: 10px;
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
+}
+
+.message-form input {
+  flex-grow: 1;
+  padding: 10px;
+<<<<<<< HEAD
+  margin-right: 10px;
+=======
+  border: 1px solid #ccc;
+  border-radius: 4px;
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
+}
+
+.message-form button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+<<<<<<< HEAD
+  cursor: pointer;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+}
+.chat-messages {
+=======
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* ... (existing styles) ... */
+
+.conversation-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.messages {
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.message {
+<<<<<<< HEAD
   padding: 10px;
   border-radius: 8px;
   max-width: 70%;
@@ -466,12 +617,20 @@ h1 {
 
 .user-message {
   flex-direction: row-reverse;
+=======
+  display: flex;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
 }
 
 .message-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
+<<<<<<< HEAD
   margin: 0 10px;
 }
 
@@ -506,12 +665,44 @@ h1 {
 }
 
 .message-form input {
+=======
+  margin-right: 10px;
+}
+
+.own-message {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+
+.message:not(.own-message) {
+  align-self: flex-start;
+  background-color: #f1f0f0;
+}
+
+.message button {
+  margin-left: 10px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+form {
+  display: flex;
+  gap: 10px;
+}
+
+form input {
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
   flex-grow: 1;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
+<<<<<<< HEAD
 .send-button {
   background-color: #4CAF50;
   color: white;
@@ -531,3 +722,170 @@ h1 {
 }
 
 /* Existing styles... */
+=======
+form button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+@media (max-width: 480px) {
+  .container {
+    max-width: 100%;
+    padding: 10px;
+  }
+  
+  .cat-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .auth-form input,
+  .submit-button,
+  .logout-button {
+    font-size: 14px;
+  }
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.cat-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-form h2 {
+  margin-top: 0;
+  color: #333;
+  text-align: center;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.submit-button, 
+.logout-button, 
+.auth-form button,
+.auth-form .submit-button {
+  width: 200px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #D2B48C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.submit-button:hover, 
+.logout-button:hover, 
+.auth-form button:hover,
+.auth-form .submit-button:hover {
+  background-color: #C19A6B;
+}
+
+.delete-account-btn {
+  background-color: #dc3545 !important;
+}
+
+.delete-account-btn:hover {
+  background-color: #c82333 !important;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.switch-form {
+  color: #D2B48C;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 200px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.side-nav li {
+  margin-bottom: 10px;
+}
+
+.side-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.side-nav a:hover {
+  color: #D2B48C;
+}
+
+.content {
+  margin-left: 220px;
+  padding: 20px;
+}
+>>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
