@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { getAllMessages, createMessage, deleteMessage, getCurrentUser } from '../services/Api';
 import { toast } from 'react-toastify';
@@ -110,20 +109,6 @@ const Chat = () => {
         />
         <button type="submit" className="submit-button">Send</button>
       </form>
-=======
-import React from 'react';
-import { Link } from 'react-router-dom';
-
-const Chat = () => {
-  return (
-    <div className="chat-container">
-      <h1>Chat</h1>
-      <div className="conversation-item">
-        <Link to="/conversation/self">
-          Chat with Yourself
-        </Link>
-      </div>
->>>>>>> e90fcc3558cbf012b6cde8cdec7ceab0233d7b86
     </div>
   );
 };
