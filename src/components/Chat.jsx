@@ -10,18 +10,21 @@ const Chat = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [fakeChat] = useState([
     {
+      "id": "fake1",
       "text": "Tja tja, hur mår du?",
       "avatar": "https://i.pravatar.cc/100?img=14",
       "username": "flojo",
       "conversationId": null
     },
     {
+      "id": "fake2",
       "text": "Hallå!! Svara då!!",
       "avatar": "https://i.pravatar.cc/100?img=14",
       "username": "Johnny",
       "conversationId": null
     },
     {
+      "id": "fake3",
       "text": "Sover du eller?! 😴",
       "avatar": "https://i.pravatar.cc/100?img=14",
       "username": "tyson",
@@ -34,6 +37,7 @@ const Chat = () => {
     if (token) {
       const decodedToken = jwtDecode(token);
       setCurrentUser(decodedToken);
+      console.log("Current user:", decodedToken); // Debug log
     } else {
       toast.error('User not authenticated');
       // Redirect to login page or handle unauthenticated state
@@ -44,6 +48,7 @@ const Chat = () => {
   const fetchMessages = async () => {
     try {
       const data = await getAllMessages(conversationId);
+      console.log("Fetched messages:", data); // Debug log
       setMessages([...fakeChat, ...data]);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -55,9 +60,10 @@ const Chat = () => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     try {
-      await createMessage({ content: newMessage, userId: currentUser.id, conversationId });
+      const response = await createMessage({ content: newMessage, userId: currentUser.id, conversationId });
+      console.log("Created message:", response); // Debug log
+      setMessages(prevMessages => [...prevMessages, response]);
       setNewMessage('');
-      fetchMessages();
     } catch (err) {
       console.error('Failed to send message:', err);
       toast.error('Failed to send message. Please try again.');
@@ -67,7 +73,7 @@ const Chat = () => {
   const handleDelete = async (msgId) => {
     try {
       await deleteMessage(msgId);
-      fetchMessages();
+      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== msgId));
       toast.success('Message deleted successfully.');
     } catch (err) {
       console.error('Failed to delete message:', err);
@@ -76,7 +82,9 @@ const Chat = () => {
   };
 
   const isCurrentUserMessage = (msg) => {
-    return msg.username === currentUser?.user || msg.user?.id === currentUser?.id;
+    const isCurrentUser = msg.username === currentUser?.user || msg.user?.id === currentUser?.id;
+    console.log(`Message: ${msg.text || msg.content}, IsCurrentUser: ${isCurrentUser}`); // Debug log
+    return isCurrentUser;
   };
 
   const getMessageColor = (username) => {
@@ -91,9 +99,9 @@ const Chat = () => {
   return (
     <div className="chat-container">
       <div className="messages-container">
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <div 
-            key={msg.id || index} 
+            key={msg.id} 
             className={`message ${isCurrentUserMessage(msg) ? 'user-message' : 'other-message'}`}
           >
             <img src={msg.avatar || msg.user?.avatar || 'https://i.pravatar.cc/100'} alt={msg.username || msg.user?.username} className="message-avatar" />
@@ -103,7 +111,7 @@ const Chat = () => {
             >
               <strong>{msg.username || msg.user?.username}: </strong>
               <span>{msg.text || msg.content}</span>
-              {isCurrentUserMessage(msg) && msg.id && (
+              {isCurrentUserMessage(msg) && !msg.id.startsWith('fake') && (
                 <button onClick={() => handleDelete(msg.id)} className="delete-button">×</button>
               )}
             </div>

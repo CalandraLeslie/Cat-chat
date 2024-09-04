@@ -24,7 +24,7 @@ async function fetchCsrfToken() {
     csrfToken = data.csrf_token;
     return csrfToken;
   } catch (error) {
-    console.error('Error fetching CSRF token');
+    console.error('Error fetching CSRF token:', error);
     throw error;
   }
 }
@@ -52,13 +52,17 @@ async function apiRequest(url, options = {}) {
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        throw new Error('Authentication failed. Please log in again.');
+      }
       const error = await response.json();
       throw new Error(error.error || 'An error occurred');
     }
 
     return response.json();
   } catch (error) {
-    console.error('API request error');
+    console.error('API request error:', error);
     throw error;
   }
 }
@@ -84,7 +88,22 @@ export function logout() {
 }
 
 export function isAuthenticated() {
-  return !!localStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
+  if (!token) return false;
+  
+  try {
+    const decodedToken = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+    if (decodedToken.exp < currentTime) {
+      localStorage.removeItem('authToken');
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    localStorage.removeItem('authToken');
+    return false;
+  }
 }
 
 export function getCurrentUser() {
@@ -99,7 +118,7 @@ export function getCurrentUser() {
         avatar: decodedToken.avatar
       };
     } catch (error) {
-      console.error('Error decoding token');
+      console.error('Error decoding token:', error);
       return null;
     }
   }
