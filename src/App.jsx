@@ -1,86 +1,36 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoginRegister from './components/LoginRegister';
 import Profile from './components/Profile';
 import Chat from './components/Chat';
+import Conversation from './components/Conversation';
 import Home from './components/Home';
 import SideNav from './components/SideNav';
-import { logout, isAuthenticated, getUserInfo } from './services/Api';
+import { logout, isAuthenticated, getCurrentUser } from './services/Api';
 import './App.css';
-
-const INACTIVE_TIMEOUT = 3 * 60 * 1000; // 3 minutes in milliseconds
 
 function App() {
   const [isAuth, setIsAuth] = useState(isAuthenticated());
   const [user, setUser] = useState(null);
-  const [lastActivity, setLastActivity] = useState(Date.now());
-
-  const handleActivity = useCallback(() => {
-    setLastActivity(Date.now());
-  }, []);
 
   useEffect(() => {
     if (isAuth) {
-      fetchUserInfo();
+      setUser(getCurrentUser());
     }
   }, [isAuth]);
 
-  useEffect(() => {
-    if (isAuth) {
-      const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-      events.forEach(event => window.addEventListener(event, handleActivity));
-
-      const checkInactivity = setInterval(() => {
-        if (Date.now() - lastActivity > INACTIVE_TIMEOUT) {
-          handleLogout();
-          toast.info('You have been logged out due to inactivity.');
-        }
-      }, 1000); // Check every second
-
-      return () => {
-        events.forEach(event => window.removeEventListener(event, handleActivity));
-        clearInterval(checkInactivity);
-      };
-    }
-  }, [isAuth, lastActivity, handleActivity]);
-
-  const fetchUserInfo = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        const userData = await getUserInfo(token);
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error('Error fetching user info:', error);
-      handleLogout();
-    }
-  };
-
   const handleLogin = (loginData) => {
     setIsAuth(true);
-    setUser({
-      id: loginData.id,
-      username: loginData.user,
-      avatar: loginData.avatar
-    });
+    setUser(getCurrentUser());
     localStorage.setItem('authToken', loginData.token);
-    localStorage.setItem('userId', loginData.id);
-    localStorage.setItem('username', loginData.user);
-    localStorage.setItem('avatar', loginData.avatar);
-    setLastActivity(Date.now());
   };
 
   const handleLogout = () => {
     logout();
     setIsAuth(false);
     setUser(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('username');
-    localStorage.removeItem('avatar');
   };
 
   return (
@@ -118,6 +68,14 @@ function App() {
               element={
                 isAuth ? 
                   <Chat user={user} /> : 
+                  <Navigate to="/" />
+              } 
+            />
+            <Route 
+              path="/conversation/:conversationId" 
+              element={
+                isAuth ? 
+                  <Conversation user={user} /> : 
                   <Navigate to="/" />
               } 
             />
