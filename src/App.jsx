@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoginRegister from './components/LoginRegister';
@@ -71,7 +71,7 @@ function App() {
               path="/profile" 
               element={
                 isAuth ? 
-                  <Profile user={user} onLogout={handleLogout} /> : 
+                  <Profile user={user} updateUser={setUser} /> : 
                   <Navigate to="/" />
               } 
             />
