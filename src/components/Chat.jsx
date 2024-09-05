@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAllMessages, createMessage, deleteMessage } from '../services/Api';
+import { getAllMessages, createMessage, deleteMessage, getCurrentUser, isAuthenticated } from '../services/Api';
 import { toast } from 'react-toastify';
-import { jwtDecode } from "jwt-decode";
 import { Trash2 } from 'lucide-react';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
@@ -54,15 +53,13 @@ const Chat = () => {
   }, [fetchServerMessages]);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        setCurrentUser(decodedToken);
-      } catch (error) {
-        console.error('Invalid token:', error);
-        localStorage.removeItem('authToken');
-      }
+    const user = getCurrentUser();
+    setCurrentUser(user);
+
+    if (!isAuthenticated()) {
+      toast.error('You are not authenticated. Please log in.');
+      // Redirect to login page or show login modal
+      return;
     }
 
     syncMessages();
@@ -76,12 +73,17 @@ const Chat = () => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     
+    if (!isAuthenticated()) {
+      toast.error('You must be logged in to send messages.');
+      return;
+    }
+
     const newMsg = {
       id: `local_${Date.now()}`,
       content: newMessage,
       user: {
         id: currentUser?.id || 'anonymous',
-        username: currentUser?.user || 'Anonymous',
+        username: currentUser?.username || 'Anonymous',
         avatar: currentUser?.avatar || DEFAULT_AVATAR
       },
       timestamp: new Date().toISOString()
@@ -94,7 +96,7 @@ const Chat = () => {
     try {
       const serverResponse = await createMessage({
         content: newMessage,
-        userId: currentUser?.id || 'anonymous'
+        userId: currentUser?.id
       });
       setMessages(prevMessages => 
         prevMessages.map(msg => 
@@ -111,6 +113,11 @@ const Chat = () => {
   };
 
   const handleDelete = async (msgId) => {
+    if (!isAuthenticated()) {
+      toast.error('You must be logged in to delete messages.');
+      return;
+    }
+
     setMessages(prevMessages => prevMessages.filter(msg => msg.id !== msgId));
     saveLocalMessages(messages.filter(msg => msg.id !== msgId));
 
@@ -126,7 +133,7 @@ const Chat = () => {
   };
 
   const isCurrentUserMessage = (msg) => {
-    return msg.user.id === currentUser?.id || (msg.user.id === 'anonymous' && !currentUser);
+    return msg.user.id === currentUser?.id;
   };
 
   return (

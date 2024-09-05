@@ -56,11 +56,17 @@ async function apiRequest(url, options = {}) {
         localStorage.removeItem('authToken');
         throw new Error('Authentication failed. Please log in again.');
       }
-      const error = await response.json();
-      throw new Error(error.error || 'An error occurred');
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      throw new Error(errorText || 'An error occurred');
     }
 
-    return response.json();
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      return response.json();
+    } else {
+      return response.text();
+    }
   } catch (error) {
     console.error('API request error:', error);
     throw error;
@@ -151,9 +157,18 @@ export async function getAllMessages(conversationId = 'default') {
 }
 
 export async function createMessage(messageData) {
+  const currentUser = getCurrentUser();
+  if (!currentUser) throw new Error('No authenticated user');
+  
+  const payload = {
+    content: messageData.content,
+    userId: currentUser.id,
+    conversationId: messageData.conversationId || 'default'
+  };
+
   return apiRequest('/messages', {
     method: 'POST',
-    body: JSON.stringify(messageData),
+    body: JSON.stringify(payload),
   });
 }
 
