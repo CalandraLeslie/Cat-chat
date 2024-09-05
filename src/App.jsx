@@ -57,7 +57,7 @@ function AppContent() {
       window.removeEventListener('keydown', handleActivity);
       clearInterval(inactivityTimer);
     };
-  }, [handleActivity]);
+  }, [handleActivity, isAuth]);
 
   useEffect(() => {
     if (isAuth === false && location.pathname !== '/') {

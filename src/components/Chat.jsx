@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAllMessages, createMessage, deleteMessage, getCurrentUser, isAuthenticated } from '../services/Api';
+import { getAllMessages, createMessage, deleteMessage, getCurrentUser, isAuthenticated, refreshToken } from '../services/Api';
 import { toast } from 'react-toastify';
 import { Trash2 } from 'lucide-react';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
 const LOCAL_STORAGE_KEY = 'localChatMessages';
 const SYNC_INTERVAL = 5000; // 5 seconds
+const DEFAULT_CONVERSATION_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -24,7 +25,7 @@ const Chat = () => {
 
   const fetchServerMessages = useCallback(async () => {
     try {
-      const serverMessages = await getAllMessages();
+      const serverMessages = await getAllMessages(DEFAULT_CONVERSATION_ID);
       return serverMessages;
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -53,16 +54,20 @@ const Chat = () => {
   }, [fetchServerMessages]);
 
   useEffect(() => {
-    const user = getCurrentUser();
-    setCurrentUser(user);
+    const initializeUser = async () => {
+      const user = getCurrentUser();
+      setCurrentUser(user);
 
-    if (!isAuthenticated()) {
-      toast.error('You are not authenticated. Please log in.');
-      // Redirect to login page or show login modal
-      return;
-    }
+      if (!isAuthenticated()) {
+        toast.error('You are not authenticated. Please log in.');
+        // Redirect to login page or show login modal
+        return;
+      }
 
-    syncMessages();
+      await syncMessages();
+    };
+
+    initializeUser();
 
     const intervalId = setInterval(syncMessages, SYNC_INTERVAL);
 
@@ -75,6 +80,7 @@ const Chat = () => {
     
     if (!isAuthenticated()) {
       toast.error('You must be logged in to send messages.');
+      // Redirect to login page or show login modal
       return;
     }
 
@@ -96,7 +102,7 @@ const Chat = () => {
     try {
       const serverResponse = await createMessage({
         content: newMessage,
-        userId: currentUser?.id
+        conversationId: DEFAULT_CONVERSATION_ID
       });
       setMessages(prevMessages => 
         prevMessages.map(msg => 
@@ -108,7 +114,14 @@ const Chat = () => {
       ));
     } catch (err) {
       console.error('Failed to send message to server:', err);
-      toast.error('Failed to send message to server. Message saved locally.');
+      if (err.message.includes('session has expired')) {
+        toast.error('Your session has expired. Please log in again.');
+        // Redirect to login page or show login modal
+      } else if (err.message.includes('No response from server')) {
+        toast.error('Network error. Message saved locally.');
+      } else {
+        toast.error(err.message || 'Failed to send message. Please try again.');
+      }
     }
   };
 
@@ -133,7 +146,7 @@ const Chat = () => {
   };
 
   const isCurrentUserMessage = (msg) => {
-    return msg.user.id === currentUser?.id;
+    return currentUser && msg.user && currentUser.id === msg.user.id;
   };
 
   return (
@@ -141,21 +154,21 @@ const Chat = () => {
       <div className="messages-container">
         {messages.map((msg) => (
           <div 
-            key={msg.id} 
+            key={msg.id || `${msg.user?.id}-${msg.timestamp}`}
             className={`message ${isCurrentUserMessage(msg) ? 'user-message' : 'other-message'}`}
           >
             {isCurrentUserMessage(msg) ? (
               <>
                 <div className="message-content">
-                  <div className="message-username">{msg.user.username}</div>
+                  <div className="message-username">{msg.user?.username}</div>
                   <div>{msg.content}</div>
                   <button onClick={() => handleDelete(msg.id)} className="delete-button">
                     <Trash2 size={16} />
                   </button>
                 </div>
                 <img 
-                  src={msg.user.avatar || DEFAULT_AVATAR} 
-                  alt={msg.user.username} 
+                  src={msg.user?.avatar || DEFAULT_AVATAR} 
+                  alt={msg.user?.username} 
                   className="message-avatar" 
                   onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
                 />
@@ -163,13 +176,13 @@ const Chat = () => {
             ) : (
               <>
                 <img 
-                  src={msg.user.avatar || DEFAULT_AVATAR} 
-                  alt={msg.user.username} 
+                  src={msg.user?.avatar || DEFAULT_AVATAR} 
+                  alt={msg.user?.username} 
                   className="message-avatar" 
                   onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
                 />
                 <div className="message-content">
-                  <div className="message-username">{msg.user.username}</div>
+                  <div className="message-username">{msg.user?.username}</div>
                   <div>{msg.content}</div>
                 </div>
               </>

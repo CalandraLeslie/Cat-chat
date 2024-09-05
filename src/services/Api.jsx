@@ -51,22 +51,24 @@ async function apiRequest(url, options = {}) {
       headers,
     });
 
+    const contentType = response.headers.get("content-type");
+    let responseData;
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      responseData = await response.json();
+    } else {
+      responseData = await response.text();
+    }
+
     if (!response.ok) {
       if (response.status === 401) {
         localStorage.removeItem('authToken');
         throw new Error('Authentication failed. Please log in again.');
       }
-      const errorText = await response.text();
-      console.error('API Error Response:', errorText);
-      throw new Error(errorText || 'An error occurred');
+      console.error('API Error Response:', responseData);
+      throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
     }
 
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-      return response.json();
-    } else {
-      return response.text();
-    }
+    return responseData;
   } catch (error) {
     console.error('API request error:', error);
     throw error;
@@ -161,21 +163,73 @@ export async function createMessage(messageData) {
   if (!currentUser) throw new Error('No authenticated user');
   
   const payload = {
-    content: messageData.content,
-    userId: currentUser.id,
-    conversationId: messageData.conversationId || 'default'
+    text: messageData.content,
+    conversationId: messageData.conversationId || '550e8400-e29b-41d4-a716-446655440000' // Default conversation ID if not provided
   };
 
-  return apiRequest('/messages', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+  try {
+    console.log('Sending message payload:', payload);
+    const response = await apiRequest('/messages', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    console.log('Server response:', response);
+    return response;
+  } catch (error) {
+    console.error('Error creating message:', error);
+    if (error.message.includes('Authentication failed')) {
+      logout();
+      throw new Error('Your session has expired. Please log in again.');
+    }
+    if (error.response) {
+      console.error('Server responded with error:', error.response.data);
+      throw new Error(error.response.data.error || 'An error occurred while sending the message.');
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+      throw new Error('No response from server. Please check your internet connection.');
+    } else {
+      console.error('Error setting up request:', error.message);
+      throw new Error('An unexpected error occurred. Please try again later.');
+    }
+  }
 }
 
 export async function deleteMessage(messageId) {
   return apiRequest(`/messages/${messageId}`, {
     method: 'DELETE',
   });
+}
+
+export function isTokenExpired() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return true;
+
+  try {
+    const decodedToken = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+    return decodedToken.exp < currentTime;
+  } catch (error) {
+    console.error('Error checking token expiration:', error);
+    return true;
+  }
+}
+
+export async function refreshToken() {
+  try {
+    const response = await apiRequest('/auth/refresh', {
+      method: 'POST',
+    });
+    if (response && response.token) {
+      localStorage.setItem('authToken', response.token);
+      return response.token;
+    } else {
+      throw new Error('Invalid response from refresh token endpoint');
+    }
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    logout();
+    throw new Error('Session expired. Please log in again.');
+  }
 }
 
 export { fetchCsrfToken };
