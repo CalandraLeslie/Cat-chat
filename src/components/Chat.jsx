@@ -1,85 +1,132 @@
-import React, { useState, useEffect } from 'react';
-import { getAllMessages, createMessage, deleteMessage, getCurrentUser } from '../services/Api';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getAllMessages, createMessage, deleteMessage } from '../services/Api';
 import { toast } from 'react-toastify';
 import { jwtDecode } from "jwt-decode";
 import { Trash2 } from 'lucide-react';
 
+const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
+const LOCAL_STORAGE_KEY = 'localChatMessages';
+const SYNC_INTERVAL = 5000; // 5 seconds
+
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [conversationId, setConversationId] = useState('default');
   const [currentUser, setCurrentUser] = useState(null);
-  const [fakeChat] = useState([
-    {
-      "id": "fake1",
-      "text": "Tja tja, hur mår du?",
-      "avatar": "https://i.pravatar.cc/100?img=14",
-      "username": "flojo",
-      "conversationId": null
-    },
-    {
-      "id": "fake2",
-      "text": "Hallå!! Svara då!!",
-      "avatar": "https://i.pravatar.cc/100?img=14",
-      "username": "tyson",
-      "conversationId": null
-    },
-    {
-      "id": "fake3",
-      "text": "Sover du eller?! 😴",
-      "avatar": "https://i.pravatar.cc/100?img=14",
-      "username": "flojo",
-      "conversationId": null
+  const [lastSyncTime, setLastSyncTime] = useState(0);
+
+  const loadLocalMessages = () => {
+    const storedMessages = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return storedMessages ? JSON.parse(storedMessages) : [];
+  };
+
+  const saveLocalMessages = (msgs) => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(msgs));
+  };
+
+  const fetchServerMessages = useCallback(async () => {
+    try {
+      const serverMessages = await getAllMessages();
+      return serverMessages;
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+      toast.error('Failed to fetch new messages. Some messages may be missing.');
+      return [];
     }
-  ]);
+  }, []);
+
+  const mergeMessages = (localMsgs, serverMsgs) => {
+    const mergedMessages = [...localMsgs];
+    serverMsgs.forEach(serverMsg => {
+      if (!mergedMessages.some(msg => msg.id === serverMsg.id)) {
+        mergedMessages.push(serverMsg);
+      }
+    });
+    return mergedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  };
+
+  const syncMessages = useCallback(async () => {
+    const localMessages = loadLocalMessages();
+    const serverMessages = await fetchServerMessages();
+    const mergedMessages = mergeMessages(localMessages, serverMessages);
+    setMessages(mergedMessages);
+    saveLocalMessages(mergedMessages);
+    setLastSyncTime(Date.now());
+  }, [fetchServerMessages]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      const decodedToken = jwtDecode(token);
-      setCurrentUser(decodedToken);
-    } else {
-      toast.error('User not authenticated');
+      try {
+        const decodedToken = jwtDecode(token);
+        setCurrentUser(decodedToken);
+      } catch (error) {
+        console.error('Invalid token:', error);
+        localStorage.removeItem('authToken');
+      }
     }
-    fetchMessages();
-  }, [conversationId]);
 
-  const fetchMessages = async () => {
-    try {
-      const data = await getAllMessages(conversationId);
-      setMessages([...fakeChat, ...data]);
-    } catch (err) {
-      console.error('Failed to fetch messages:', err);
-      toast.error('Failed to fetch messages. Please try again.');
-    }
-  };
+    syncMessages();
+
+    const intervalId = setInterval(syncMessages, SYNC_INTERVAL);
+
+    return () => clearInterval(intervalId);
+  }, [syncMessages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+    
+    const newMsg = {
+      id: `local_${Date.now()}`,
+      content: newMessage,
+      user: {
+        id: currentUser?.id || 'anonymous',
+        username: currentUser?.user || 'Anonymous',
+        avatar: currentUser?.avatar || DEFAULT_AVATAR
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages(prevMessages => [...prevMessages, newMsg]);
+    saveLocalMessages([...messages, newMsg]);
+    setNewMessage('');
+
     try {
-      const response = await createMessage({ content: newMessage, userId: currentUser.id, conversationId });
-      setMessages(prevMessages => [...prevMessages, response]);
-      setNewMessage('');
+      const serverResponse = await createMessage({
+        content: newMessage,
+        userId: currentUser?.id || 'anonymous'
+      });
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg.id === newMsg.id ? {...serverResponse, user: newMsg.user} : msg
+        )
+      );
+      saveLocalMessages(messages.map(msg => 
+        msg.id === newMsg.id ? {...serverResponse, user: newMsg.user} : msg
+      ));
     } catch (err) {
-      console.error('Failed to send message:', err);
-      toast.error('Failed to send message. Please try again.');
+      console.error('Failed to send message to server:', err);
+      toast.error('Failed to send message to server. Message saved locally.');
     }
   };
 
   const handleDelete = async (msgId) => {
-    try {
-      await deleteMessage(msgId);
-      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== msgId));
-      toast.success('Message deleted successfully.');
-    } catch (err) {
-      console.error('Failed to delete message:', err);
-      toast.error('Failed to delete message. Please try again.');
+    setMessages(prevMessages => prevMessages.filter(msg => msg.id !== msgId));
+    saveLocalMessages(messages.filter(msg => msg.id !== msgId));
+
+    if (!msgId.startsWith('local_')) {
+      try {
+        await deleteMessage(msgId);
+        toast.success('Message deleted successfully.');
+      } catch (err) {
+        console.error('Failed to delete message from server:', err);
+        toast.error('Failed to delete message from server. Deleted locally.');
+      }
     }
   };
 
   const isCurrentUserMessage = (msg) => {
-    return msg.username === currentUser?.user || msg.user?.id === currentUser?.id;
+    return msg.user.id === currentUser?.id || (msg.user.id === 'anonymous' && !currentUser);
   };
 
   return (
@@ -93,30 +140,30 @@ const Chat = () => {
             {isCurrentUserMessage(msg) ? (
               <>
                 <div className="message-content">
-                  <div className="message-username">{msg.username || msg.user?.username}</div>
-                  <div>{msg.text || msg.content}</div>
+                  <div className="message-username">{msg.user.username}</div>
+                  <div>{msg.content}</div>
+                  <button onClick={() => handleDelete(msg.id)} className="delete-button">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
                 <img 
-                  src={msg.avatar || msg.user?.avatar || 'https://i.pravatar.cc/100'} 
-                  alt={msg.username || msg.user?.username} 
+                  src={msg.user.avatar || DEFAULT_AVATAR} 
+                  alt={msg.user.username} 
                   className="message-avatar" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
                 />
-                {!msg.id.startsWith('fake') && (
-                  <button onClick={() => handleDelete(msg.id)} className="delete-button">
-                    Delete
-                  </button>
-                )}
               </>
             ) : (
               <>
                 <img 
-                  src={msg.avatar || msg.user?.avatar || 'https://i.pravatar.cc/100'} 
-                  alt={msg.username || msg.user?.username} 
+                  src={msg.user.avatar || DEFAULT_AVATAR} 
+                  alt={msg.user.username} 
                   className="message-avatar" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
                 />
                 <div className="message-content">
-                  <div className="message-username">{msg.username || msg.user?.username}</div>
-                  <div>{msg.text || msg.content}</div>
+                  <div className="message-username">{msg.user.username}</div>
+                  <div>{msg.content}</div>
                 </div>
               </>
             )}
