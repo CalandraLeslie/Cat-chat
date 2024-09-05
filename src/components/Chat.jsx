@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllMessages, createMessage, deleteMessage, getCurrentUser } from '../services/Api';
 import { toast } from 'react-toastify';
 import { jwtDecode } from "jwt-decode";
+import { Trash2 } from 'lucide-react';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -20,14 +21,14 @@ const Chat = () => {
       "id": "fake2",
       "text": "Hallå!! Svara då!!",
       "avatar": "https://i.pravatar.cc/100?img=14",
-      "username": "Johnny",
+      "username": "tyson",
       "conversationId": null
     },
     {
       "id": "fake3",
       "text": "Sover du eller?! 😴",
       "avatar": "https://i.pravatar.cc/100?img=14",
-      "username": "tyson",
+      "username": "flojo",
       "conversationId": null
     }
   ]);
@@ -37,10 +38,8 @@ const Chat = () => {
     if (token) {
       const decodedToken = jwtDecode(token);
       setCurrentUser(decodedToken);
-      console.log("Current user:", decodedToken); // Debug log
     } else {
       toast.error('User not authenticated');
-      // Redirect to login page or handle unauthenticated state
     }
     fetchMessages();
   }, [conversationId]);
@@ -48,7 +47,6 @@ const Chat = () => {
   const fetchMessages = async () => {
     try {
       const data = await getAllMessages(conversationId);
-      console.log("Fetched messages:", data); // Debug log
       setMessages([...fakeChat, ...data]);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -61,7 +59,6 @@ const Chat = () => {
     if (!newMessage.trim()) return;
     try {
       const response = await createMessage({ content: newMessage, userId: currentUser.id, conversationId });
-      console.log("Created message:", response); // Debug log
       setMessages(prevMessages => [...prevMessages, response]);
       setNewMessage('');
     } catch (err) {
@@ -82,18 +79,7 @@ const Chat = () => {
   };
 
   const isCurrentUserMessage = (msg) => {
-    const isCurrentUser = msg.username === currentUser?.user || msg.user?.id === currentUser?.id;
-    console.log(`Message: ${msg.text || msg.content}, IsCurrentUser: ${isCurrentUser}`); // Debug log
-    return isCurrentUser;
-  };
-
-  const getMessageColor = (username) => {
-    const colors = ['#E0F7FA', '#E8EAF6', '#F3E5F5', '#FFF3E0', '#E8F5E9'];
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-      hash = username.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
+    return msg.username === currentUser?.user || msg.user?.id === currentUser?.id;
   };
 
   return (
@@ -104,17 +90,36 @@ const Chat = () => {
             key={msg.id} 
             className={`message ${isCurrentUserMessage(msg) ? 'user-message' : 'other-message'}`}
           >
-            <img src={msg.avatar || msg.user?.avatar || 'https://i.pravatar.cc/100'} alt={msg.username || msg.user?.username} className="message-avatar" />
-            <div 
-              className="message-content"
-              style={{ backgroundColor: isCurrentUserMessage(msg) ? '#DCF8C6' : getMessageColor(msg.username || msg.user?.username) }}
-            >
-              <strong>{msg.username || msg.user?.username}: </strong>
-              <span>{msg.text || msg.content}</span>
-              {isCurrentUserMessage(msg) && !msg.id.startsWith('fake') && (
-                <button onClick={() => handleDelete(msg.id)} className="delete-button">×</button>
-              )}
-            </div>
+            {isCurrentUserMessage(msg) ? (
+              <>
+                <div className="message-content">
+                  <div className="message-username">{msg.username || msg.user?.username}</div>
+                  <div>{msg.text || msg.content}</div>
+                </div>
+                <img 
+                  src={msg.avatar || msg.user?.avatar || 'https://i.pravatar.cc/100'} 
+                  alt={msg.username || msg.user?.username} 
+                  className="message-avatar" 
+                />
+                {!msg.id.startsWith('fake') && (
+                  <button onClick={() => handleDelete(msg.id)} className="delete-button">
+                    Delete
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <img 
+                  src={msg.avatar || msg.user?.avatar || 'https://i.pravatar.cc/100'} 
+                  alt={msg.username || msg.user?.username} 
+                  className="message-avatar" 
+                />
+                <div className="message-content">
+                  <div className="message-username">{msg.username || msg.user?.username}</div>
+                  <div>{msg.text || msg.content}</div>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -126,7 +131,7 @@ const Chat = () => {
           placeholder="Type a message..."
           required
         />
-        <button type="submit" className="submit-button">Send</button>
+        <button type="submit">Send</button>
       </form>
     </div>
   );
