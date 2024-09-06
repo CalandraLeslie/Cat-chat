@@ -19,7 +19,6 @@ const Chat = () => {
       const userData = await getUserById(userId);
       return userData[0].username;
     } catch (error) {
-      console.error('Error fetching username:', error);
       return 'Unknown User';
     }
   }, []);
@@ -50,7 +49,6 @@ const Chat = () => {
         ...Object.fromEntries(newUsernames.filter(Boolean).map(({ id, username }) => [id, username]))
       }));
     } catch (err) {
-      console.error('Failed to fetch messages or usernames:', err);
       if (err.message === 'Authentication failed. Please log in again.') {
         setIsLoggedIn(false);
         setMessages([]);
@@ -98,7 +96,6 @@ const Chat = () => {
       await fetchMessages();
       setNewMessage('');
     } catch (err) {
-      console.error('Failed to send message:', err);
       toast.error(err.message || 'Failed to send message. Please try again.');
     }
   };
@@ -111,7 +108,6 @@ const Chat = () => {
       await fetchMessages();
       toast.success('Message deleted successfully.');
     } catch (err) {
-      console.error('Failed to delete message:', err);
       toast.error('Failed to delete message. Please try again.');
     }
   };

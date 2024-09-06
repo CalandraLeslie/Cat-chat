@@ -81,11 +81,8 @@ export async function login(credentials) {
     body: JSON.stringify(credentials),
   });
   authToken = response.token;
-  // Store the token securely (e.g., in an HTTP-only cookie or secure storage)
-  // This is a simplified example; in a real app, use more secure storage methods
   sessionStorage.setItem('authToken', authToken);
   
-  // Return user data without the token
   return {
     user: {
       id: response.id,
@@ -190,12 +187,10 @@ export async function createMessage(messageData) {
   };
 
   try {
-    console.log('Sending message payload:', payload);
     const response = await apiRequest('/messages', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    console.log('Server response:', response);
     return response;
   } catch (error) {
     console.error('Error creating message:', error);
