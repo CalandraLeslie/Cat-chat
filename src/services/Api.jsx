@@ -154,7 +154,7 @@ export async function deleteUser() {
   });
 }
 
-export async function getAllMessages(conversationId = 'default') {
+export async function getAllMessages(conversationId = '550e8400-e29b-41d4-a716-146655440000') {
   return apiRequest(`/messages?conversationId=${conversationId}`);
 }
 
@@ -163,8 +163,9 @@ export async function createMessage(messageData) {
   if (!currentUser) throw new Error('No authenticated user');
   
   const payload = {
+    userId: currentUser.id,
     text: messageData.content,
-    conversationId: messageData.conversationId || '550e8400-e29b-41d4-a716-446655440000' // Default conversation ID if not provided
+    conversationId: messageData.conversationId || '550e8400-e29b-41d4-a716-146655440000'
   };
 
   try {
@@ -181,16 +182,7 @@ export async function createMessage(messageData) {
       logout();
       throw new Error('Your session has expired. Please log in again.');
     }
-    if (error.response) {
-      console.error('Server responded with error:', error.response.data);
-      throw new Error(error.response.data.error || 'An error occurred while sending the message.');
-    } else if (error.request) {
-      console.error('No response received:', error.request);
-      throw new Error('No response from server. Please check your internet connection.');
-    } else {
-      console.error('Error setting up request:', error.message);
-      throw new Error('An unexpected error occurred. Please try again later.');
-    }
+    throw error;
   }
 }
 
@@ -230,6 +222,12 @@ export async function refreshToken() {
     logout();
     throw new Error('Session expired. Please log in again.');
   }
+}
+
+export async function getUserById(userId) {
+  return apiRequest(`/users/${userId}`, {
+    method: 'GET',
+  });
 }
 
 export { fetchCsrfToken };

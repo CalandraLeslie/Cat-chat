@@ -35,6 +35,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [lastActivity, setLastActivity] = useState(Date.now());
+  const [currentConversationId, setCurrentConversationId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -106,9 +107,23 @@ function AppContent() {
     logout();
     setIsAuth(false);
     setUser(null);
+    setCurrentConversationId(null);
     localStorage.removeItem('lastRoute');
     navigate('/');
   };
+
+  const initializeConversation = useCallback(async () => {
+    if (!currentConversationId) {
+      const newConversationId = await createNewConversation();
+      setCurrentConversationId(newConversationId);
+    }
+  }, [currentConversationId]);
+
+  useEffect(() => {
+    if (isAuth && location.pathname === '/chat') {
+      initializeConversation();
+    }
+  }, [isAuth, location.pathname, initializeConversation]);
 
   if (isLoading || isAuth === null) {
     return <div>Loading...</div>;
@@ -147,7 +162,11 @@ function AppContent() {
             path="/chat" 
             element={
               isAuth ? 
-                <Chat user={user} /> : 
+                <Chat 
+                  user={user} 
+                  conversationId={currentConversationId}
+                  initializeConversation={initializeConversation}
+                /> : 
                 <Navigate to="/" />
             } 
           />

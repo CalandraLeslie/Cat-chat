@@ -1,194 +1,181 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAllMessages, createMessage, deleteMessage, getCurrentUser, isAuthenticated, refreshToken } from '../services/Api';
+import { createMessage, deleteMessage, getCurrentUser, isAuthenticated, getAllMessages } from '../services/Api';
 import { toast } from 'react-toastify';
 import { Trash2 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
-const LOCAL_STORAGE_KEY = 'localChatMessages';
 const SYNC_INTERVAL = 5000; // 5 seconds
-const DEFAULT_CONVERSATION_ID = '550e8400-e29b-41d4-a716-446655440000';
+
+const fetchUsername = async (userId) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`https://chatify-api.up.railway.app/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+
+    const userData = await response.json();
+    return userData[0].username;
+  } catch (error) {
+    console.error('Error fetching username:', error);
+    return 'Unknown User';
+  }
+};
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [lastSyncTime, setLastSyncTime] = useState(0);
+  const [usernames, setUsernames] = useState({});
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
 
-  const loadLocalMessages = () => {
-    const storedMessages = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return storedMessages ? JSON.parse(storedMessages) : [];
-  };
-
-  const saveLocalMessages = (msgs) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(msgs));
-  };
-
-  const fetchServerMessages = useCallback(async () => {
-    try {
-      const serverMessages = await getAllMessages(DEFAULT_CONVERSATION_ID);
-      return serverMessages;
-    } catch (err) {
-      console.error('Failed to fetch messages:', err);
-      toast.error('Failed to fetch new messages. Some messages may be missing.');
-      return [];
-    }
-  }, []);
-
-  const mergeMessages = (localMsgs, serverMsgs) => {
-    const mergedMessages = [...localMsgs];
-    serverMsgs.forEach(serverMsg => {
-      if (!mergedMessages.some(msg => msg.id === serverMsg.id)) {
-        mergedMessages.push(serverMsg);
-      }
-    });
-    return mergedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  };
-
-  const syncMessages = useCallback(async () => {
-    const localMessages = loadLocalMessages();
-    const serverMessages = await fetchServerMessages();
-    const mergedMessages = mergeMessages(localMessages, serverMessages);
-    setMessages(mergedMessages);
-    saveLocalMessages(mergedMessages);
-    setLastSyncTime(Date.now());
-  }, [fetchServerMessages]);
-
-  useEffect(() => {
-    const initializeUser = async () => {
-      const user = getCurrentUser();
-      setCurrentUser(user);
-
-      if (!isAuthenticated()) {
-        toast.error('You are not authenticated. Please log in.');
-        // Redirect to login page or show login modal
-        return;
-      }
-
-      await syncMessages();
-    };
-
-    initializeUser();
-
-    const intervalId = setInterval(syncMessages, SYNC_INTERVAL);
-
-    return () => clearInterval(intervalId);
-  }, [syncMessages]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    
-    if (!isAuthenticated()) {
-      toast.error('You must be logged in to send messages.');
-      // Redirect to login page or show login modal
+  const fetchMessages = useCallback(async () => {
+    if (!isLoggedIn) {
+      setMessages([]);
+      setUsernames({});
       return;
     }
 
-    const newMsg = {
-      id: `local_${Date.now()}`,
-      content: newMessage,
-      user: {
-        id: currentUser?.id || 'anonymous',
-        username: currentUser?.username || 'Anonymous',
-        avatar: currentUser?.avatar || DEFAULT_AVATAR
-      },
-      timestamp: new Date().toISOString()
+    try {
+      const fetchedMessages = await getAllMessages();
+      setMessages(fetchedMessages);
+
+      const userIds = [...new Set(fetchedMessages.map(msg => msg.userId))];
+      const usernamePromises = userIds.map(async id => {
+        if (!usernames[id]) {
+          const username = await fetchUsername(id);
+          return { id, username };
+        }
+        return null;
+      });
+      
+      const newUsernames = await Promise.all(usernamePromises);
+      setUsernames(prevUsernames => ({
+        ...prevUsernames,
+        ...Object.fromEntries(newUsernames.filter(Boolean).map(({ id, username }) => [id, username]))
+      }));
+    } catch (err) {
+      console.error('Failed to fetch messages or usernames:', err);
+      if (err.message === 'Authentication failed. Please log in again.') {
+        setIsLoggedIn(false);
+        setMessages([]);
+        setUsernames({});
+        toast.error('Your session has expired. Please log in again.');
+      } else {
+        toast.error('Failed to fetch messages or usernames. Please try again.');
+      }
+    }
+  }, [usernames, isLoggedIn]);
+
+  useEffect(() => {
+    const checkAuthAndFetch = async () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      if (authenticated) {
+        const user = getCurrentUser();
+        setCurrentUser(user);
+        await fetchMessages();
+      } else {
+        setCurrentUser(null);
+        setMessages([]);
+        setUsernames({});
+      }
     };
 
-    setMessages(prevMessages => [...prevMessages, newMsg]);
-    saveLocalMessages([...messages, newMsg]);
-    setNewMessage('');
+    checkAuthAndFetch();
+
+    const intervalId = setInterval(checkAuthAndFetch, SYNC_INTERVAL);
+
+    return () => clearInterval(intervalId);
+  }, [fetchMessages]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !isLoggedIn) return;
 
     try {
-      const serverResponse = await createMessage({
-        content: newMessage,
-        conversationId: DEFAULT_CONVERSATION_ID
-      });
-      setMessages(prevMessages => 
-        prevMessages.map(msg => 
-          msg.id === newMsg.id ? {...serverResponse, user: newMsg.user} : msg
-        )
-      );
-      saveLocalMessages(messages.map(msg => 
-        msg.id === newMsg.id ? {...serverResponse, user: newMsg.user} : msg
-      ));
+      const sanitizedMessage = DOMPurify.sanitize(newMessage);
+      const messageData = {
+        content: sanitizedMessage,
+        conversationId: '550e8400-e29b-41d4-a716-146655440000'
+      };
+      await createMessage(messageData);
+      await fetchMessages();
+      setNewMessage('');
     } catch (err) {
-      console.error('Failed to send message to server:', err);
-      if (err.message.includes('session has expired')) {
-        toast.error('Your session has expired. Please log in again.');
-        // Redirect to login page or show login modal
-      } else if (err.message.includes('No response from server')) {
-        toast.error('Network error. Message saved locally.');
-      } else {
-        toast.error(err.message || 'Failed to send message. Please try again.');
-      }
+      console.error('Failed to send message:', err);
+      toast.error(err.message || 'Failed to send message. Please try again.');
     }
   };
 
   const handleDelete = async (msgId) => {
-    if (!isAuthenticated()) {
-      toast.error('You must be logged in to delete messages.');
-      return;
-    }
+    if (!isLoggedIn) return;
 
-    setMessages(prevMessages => prevMessages.filter(msg => msg.id !== msgId));
-    saveLocalMessages(messages.filter(msg => msg.id !== msgId));
-
-    if (!msgId.startsWith('local_')) {
-      try {
-        await deleteMessage(msgId);
-        toast.success('Message deleted successfully.');
-      } catch (err) {
-        console.error('Failed to delete message from server:', err);
-        toast.error('Failed to delete message from server. Deleted locally.');
-      }
+    try {
+      await deleteMessage(msgId);
+      await fetchMessages();
+      toast.success('Message deleted successfully.');
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+      toast.error('Failed to delete message. Please try again.');
     }
   };
 
-  const isCurrentUserMessage = (msg) => {
-    return currentUser && msg.user && currentUser.id === msg.user.id;
-  };
+  if (!isLoggedIn) {
+    return <div>Please log in to view the chat.</div>;
+  }
 
   return (
     <div className="chat-container">
       <div className="messages-container">
-        {messages.map((msg) => (
-          <div 
-            key={msg.id || `${msg.user?.id}-${msg.timestamp}`}
-            className={`message ${isCurrentUserMessage(msg) ? 'user-message' : 'other-message'}`}
-          >
-            {isCurrentUserMessage(msg) ? (
-              <>
-                <div className="message-content">
-                  <div className="message-username">{msg.user?.username}</div>
-                  <div>{msg.content}</div>
-                  <button onClick={() => handleDelete(msg.id)} className="delete-button">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                <img 
-                  src={msg.user?.avatar || DEFAULT_AVATAR} 
-                  alt={msg.user?.username} 
-                  className="message-avatar" 
-                  onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
-                />
-              </>
-            ) : (
-              <>
-                <img 
-                  src={msg.user?.avatar || DEFAULT_AVATAR} 
-                  alt={msg.user?.username} 
-                  className="message-avatar" 
-                  onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR }}
-                />
-                <div className="message-content">
-                  <div className="message-username">{msg.user?.username}</div>
-                  <div>{msg.content}</div>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+        {messages.map((msg) => {
+          const username = msg.userId === currentUser?.id ? currentUser.username : usernames[msg.userId] || 'Unknown User';
+          return (
+            <div 
+              key={msg.id}
+              className={`message ${msg.userId === currentUser?.id ? 'user-message' : 'other-message'}`}
+            >
+              {msg.userId === currentUser?.id ? (
+                <>
+                  <div className="message-content">
+                    <div className="message-username">{username}</div>
+                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }} />
+                    <button onClick={() => handleDelete(msg.id)} className="delete-button">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <img 
+                    src={currentUser.avatar || DEFAULT_AVATAR} 
+                    alt={username} 
+                    className="message-avatar" 
+                  />
+                </>
+              ) : (
+                <>
+                  <img 
+                    src={DEFAULT_AVATAR} 
+                    alt={username} 
+                    className="message-avatar" 
+                  />
+                  <div className="message-content">
+                    <div className="message-username">{username}</div>
+                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }} />
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
       <form onSubmit={handleSubmit} className="message-form">
         <input
