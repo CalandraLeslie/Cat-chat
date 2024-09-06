@@ -24,9 +24,9 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
 
     try {
       const response = await login(formData);
-      console.log('Login response:', response);
+      // Remove console.log of the entire response
       toast.success('Login successful!');
-      onLogin(response);
+      onLogin(response.user); // Only pass user data, not the entire response
     } catch (error) {
       console.error('Authentication error:', error);
       toast.error('Login failed. Please check your credentials.');

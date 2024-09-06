@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createMessage, deleteMessage, getCurrentUser, isAuthenticated, getAllMessages } from '../services/Api';
+import { createMessage, deleteMessage, getCurrentUser, isAuthenticated, getAllMessages, getUserById } from '../services/Api';
 import { toast } from 'react-toastify';
 import { Trash2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -7,37 +7,22 @@ import DOMPurify from 'dompurify';
 const DEFAULT_AVATAR = 'https://i.ibb.co/RvKq4CZ/catchat.jpg';
 const SYNC_INTERVAL = 5000; // 5 seconds
 
-const fetchUsername = async (userId) => {
-  try {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-
-    const response = await fetch(`https://chatify-api.up.railway.app/users/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user data');
-    }
-
-    const userData = await response.json();
-    return userData[0].username;
-  } catch (error) {
-    console.error('Error fetching username:', error);
-    return 'Unknown User';
-  }
-};
-
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [usernames, setUsernames] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
+
+  const fetchUsername = useCallback(async (userId) => {
+    try {
+      const userData = await getUserById(userId);
+      return userData[0].username;
+    } catch (error) {
+      console.error('Error fetching username:', error);
+      return 'Unknown User';
+    }
+  }, []);
 
   const fetchMessages = useCallback(async () => {
     if (!isLoggedIn) {
@@ -75,7 +60,7 @@ const Chat = () => {
         toast.error('Failed to fetch messages or usernames. Please try again.');
       }
     }
-  }, [usernames, isLoggedIn]);
+  }, [usernames, isLoggedIn, fetchUsername]);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {

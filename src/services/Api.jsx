@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 const API_URL = 'https://chatify-api.up.railway.app';
 
 let csrfToken = null;
+let authToken = null;
 
 async function fetchCsrfToken() {
   if (csrfToken) return csrfToken;
@@ -35,15 +36,14 @@ async function apiRequest(url, options = {}) {
       await fetchCsrfToken();
     }
 
-    const token = localStorage.getItem('authToken');
     const headers = {
       ...options.headers,
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrfToken,
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
     }
 
     const response = await fetch(`${API_URL}${url}`, {
@@ -61,7 +61,7 @@ async function apiRequest(url, options = {}) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        localStorage.removeItem('authToken');
+        authToken = null;
         throw new Error('Authentication failed. Please log in again.');
       }
       console.error('API Error Response:', responseData);
@@ -80,8 +80,20 @@ export async function login(credentials) {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
-  localStorage.setItem('authToken', response.token);
-  return response;
+  authToken = response.token;
+  // Store the token securely (e.g., in an HTTP-only cookie or secure storage)
+  // This is a simplified example; in a real app, use more secure storage methods
+  sessionStorage.setItem('authToken', authToken);
+  
+  // Return user data without the token
+  return {
+    user: {
+      id: response.id,
+      username: response.user,
+      email: response.email,
+      avatar: response.avatar
+    }
+  };
 }
 
 export async function registerUser(userData) {
@@ -92,33 +104,42 @@ export async function registerUser(userData) {
 }
 
 export function logout() {
-  localStorage.removeItem('authToken');
+  authToken = null;
+  sessionStorage.removeItem('authToken');
 }
 
 export function isAuthenticated() {
-  const token = localStorage.getItem('authToken');
-  if (!token) return false;
+  if (!authToken) {
+    authToken = sessionStorage.getItem('authToken');
+  }
+  
+  if (!authToken) return false;
   
   try {
-    const decodedToken = jwtDecode(token);
+    const decodedToken = jwtDecode(authToken);
     const currentTime = Date.now() / 1000;
     if (decodedToken.exp < currentTime) {
-      localStorage.removeItem('authToken');
+      authToken = null;
+      sessionStorage.removeItem('authToken');
       return false;
     }
     return true;
   } catch (error) {
     console.error('Error decoding token:', error);
-    localStorage.removeItem('authToken');
+    authToken = null;
+    sessionStorage.removeItem('authToken');
     return false;
   }
 }
 
 export function getCurrentUser() {
-  const token = localStorage.getItem('authToken');
-  if (token) {
+  if (!authToken) {
+    authToken = sessionStorage.getItem('authToken');
+  }
+  
+  if (authToken) {
     try {
-      const decodedToken = jwtDecode(token);
+      const decodedToken = jwtDecode(authToken);
       return {
         id: decodedToken.id,
         username: decodedToken.user,
@@ -193,11 +214,14 @@ export async function deleteMessage(messageId) {
 }
 
 export function isTokenExpired() {
-  const token = localStorage.getItem('authToken');
-  if (!token) return true;
+  if (!authToken) {
+    authToken = sessionStorage.getItem('authToken');
+  }
+  
+  if (!authToken) return true;
 
   try {
-    const decodedToken = jwtDecode(token);
+    const decodedToken = jwtDecode(authToken);
     const currentTime = Date.now() / 1000;
     return decodedToken.exp < currentTime;
   } catch (error) {
@@ -212,7 +236,8 @@ export async function refreshToken() {
       method: 'POST',
     });
     if (response && response.token) {
-      localStorage.setItem('authToken', response.token);
+      authToken = response.token;
+      sessionStorage.setItem('authToken', authToken);
       return response.token;
     } else {
       throw new Error('Invalid response from refresh token endpoint');
