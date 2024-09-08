@@ -80,17 +80,8 @@ function AppContent() {
   useEffect(() => {
     if (isAuth === false && location.pathname !== '/') {
       navigate('/');
-    } else if (isAuth && location.pathname === '/') {
-      const lastRoute = localStorage.getItem('lastRoute') || '/chat';
-      navigate(lastRoute);
     }
   }, [isAuth, location.pathname, navigate]);
-
-  useEffect(() => {
-    if (isAuth && location.pathname !== '/') {
-      localStorage.setItem('lastRoute', location.pathname);
-    }
-  }, [location.pathname, isAuth]);
 
   const handleLogin = async (loginData) => {
     setIsAuth(true);
@@ -98,16 +89,16 @@ function AppContent() {
     const userData = await getUserInfo();
     setUser(userData);
     setLastActivity(Date.now());
-    const lastRoute = localStorage.getItem('lastRoute') || '/chat';
-    navigate(lastRoute);
+    navigate('/chat');  // Redirect to Chat.jsx after successful login
   };
 
   const handleLogout = () => {
     logout();
     setIsAuth(false);
     setUser(null);
+    localStorage.removeItem('authToken');
     localStorage.removeItem('lastRoute');
-    navigate('/');
+    navigate('/');  // Redirect to login page after logout
   };
 
   if (isLoading || isAuth === null) {

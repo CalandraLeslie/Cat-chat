@@ -81,7 +81,7 @@ export async function login(credentials) {
     body: JSON.stringify(credentials),
   });
   authToken = response.token;
-  sessionStorage.setItem('authToken', authToken);
+  localStorage.setItem('authToken', authToken);
   
   return {
     user: {
@@ -94,20 +94,28 @@ export async function login(credentials) {
 }
 
 export async function registerUser(userData) {
-  return apiRequest('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
+  try {
+    const response = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+    return response;
+  } catch (error) {
+    if (error.message.includes('Username or email already exists')) {
+      throw new Error('Username or email already exists');
+    }
+    throw error;
+  }
 }
 
 export function logout() {
   authToken = null;
-  sessionStorage.removeItem('authToken');
+  localStorage.removeItem('authToken');
 }
 
 export function isAuthenticated() {
   if (!authToken) {
-    authToken = sessionStorage.getItem('authToken');
+    authToken = localStorage.getItem('authToken');
   }
   
   if (!authToken) return false;
@@ -117,21 +125,21 @@ export function isAuthenticated() {
     const currentTime = Date.now() / 1000;
     if (decodedToken.exp < currentTime) {
       authToken = null;
-      sessionStorage.removeItem('authToken');
+      localStorage.removeItem('authToken');
       return false;
     }
     return true;
   } catch (error) {
     console.error('Error decoding token:', error);
     authToken = null;
-    sessionStorage.removeItem('authToken');
+    localStorage.removeItem('authToken');
     return false;
   }
 }
 
 export function getCurrentUser() {
   if (!authToken) {
-    authToken = sessionStorage.getItem('authToken');
+    authToken = localStorage.getItem('authToken');
   }
   
   if (authToken) {
@@ -210,7 +218,7 @@ export async function deleteMessage(messageId) {
 
 export function isTokenExpired() {
   if (!authToken) {
-    authToken = sessionStorage.getItem('authToken');
+    authToken = localStorage.getItem('authToken');
   }
   
   if (!authToken) return true;
@@ -232,7 +240,7 @@ export async function refreshToken() {
     });
     if (response && response.token) {
       authToken = response.token;
-      sessionStorage.setItem('authToken', authToken);
+      localStorage.setItem('authToken', authToken);
       return response.token;
     } else {
       throw new Error('Invalid response from refresh token endpoint');

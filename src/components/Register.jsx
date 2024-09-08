@@ -33,7 +33,11 @@ const Register = ({ onSwitchToLogin }) => {
       onSwitchToLogin();
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Registration failed. Please try again.');
+      if (error.message === 'Username or email already exists') {
+        toast.error('Username or email already exists. Please choose a different username or email.');
+      } else {
+        toast.error(error.message || 'Registration failed. Please try again.');
+      }
     }
   };
 
